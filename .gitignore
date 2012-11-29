@@ -1,0 +1,14 @@
+.classpath
+.project
+target
+.settings
+.DS_Store
+.faces-config.xml.jsfdia
+MANIFEST.MF
+.idea
+*.iml
+*.ipr
+*.iws
+
+/rest-api/index
+/rest-api/rest/index

@@ -10,23 +10,36 @@ import org.apache.hadoop.util.Progressable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author dmezhensky
+ * Implementation storing data in Swift as array ob blocks.
+ * another applications can't read data in such representation
  */
 public class SwiftBlockFileSystem extends FileSystem {
+    /**
+     * fs URI
+     */
     private URI uri;
 
+    /**
+     * File system store instance
+     */
     private SwiftBlockFileSystemStore store;
 
+    /**
+     * temporary working dir
+     */
     private Path workingDir;
 
-    public SwiftBlockFileSystem(Configuration configuration) {
-        setConf(configuration);
-    }
-
+    /**
+     * class initialization
+     * @param uri fs URI
+     * @param conf fs configuration
+     * @throws IOException
+     */
     @Override
     public void initialize(URI uri, Configuration conf) throws IOException {
         super.initialize(uri, conf);
@@ -36,30 +49,35 @@ public class SwiftBlockFileSystem extends FileSystem {
         }
         store.initialize(uri, conf);
         setConf(conf);
-        this.uri = URI.create(String.format("swift://%s:%d", uri.getHost(), uri.getPort()));
+        this.uri = URI.create(String.format("bswift://%s:%d", uri.getHost(), uri.getPort()));
         this.workingDir = new Path("/user", System.getProperty("user.name")).makeQualified(this);
     }
 
+    /**
+     *
+     * @return fs URI
+     */
     @Override
     public URI getUri() {
         return uri;
     }
 
+    /**
+     *
+     * @return path to working dir
+     */
     @Override
     public Path getWorkingDirectory() {
         return workingDir;
     }
 
+    /**
+     *
+     * @param dir fs working directory
+     */
     @Override
     public void setWorkingDirectory(Path dir) {
         workingDir = makeAbsolute(dir);
-    }
-
-    private Path makeAbsolute(Path path) {
-        if (path.isAbsolute()) {
-            return path;
-        }
-        return new Path(workingDir, path);
     }
 
     /**
@@ -83,19 +101,6 @@ public class SwiftBlockFileSystem extends FileSystem {
         return result;
     }
 
-    private boolean mkdir(Path path) throws IOException {
-        Path absolutePath = makeAbsolute(path);
-        INode inode = store.retrieveINode(absolutePath);
-        if (inode == null) {
-            store.storeINode(absolutePath, INode.DIRECTORY_INODE);
-        } else if (inode.isFile()) {
-            throw new IOException(String.format(
-                    "Can't make directory for path %s since it is a file.",
-                    absolutePath));
-        }
-        return true;
-    }
-
     @Override
     public boolean isFile(Path path) throws IOException {
         INode inode = store.retrieveINode(makeAbsolute(path));
@@ -103,17 +108,6 @@ public class SwiftBlockFileSystem extends FileSystem {
             return false;
         }
         return inode.isFile();
-    }
-
-    private INode checkFile(Path path) throws IOException {
-        INode inode = store.retrieveINode(makeAbsolute(path));
-        if (inode == null) {
-            throw new IOException("No such file.");
-        }
-        if (inode.isDirectory()) {
-            throw new IOException("Path " + path + " is a directory.");
-        }
-        return inode;
     }
 
     @Override
@@ -132,6 +126,37 @@ public class SwiftBlockFileSystem extends FileSystem {
             ret.add(getFileStatus(p.makeQualified(this)));
         }
         return ret.toArray(new FileStatus[ret.size()]);
+    }
+
+    private Path makeAbsolute(Path path) {
+        if (path.isAbsolute()) {
+            return path;
+        }
+        return new Path(workingDir, path);
+    }
+
+    private boolean mkdir(Path path) throws IOException {
+        Path absolutePath = makeAbsolute(path);
+        INode inode = store.retrieveINode(absolutePath);
+        if (inode == null) {
+            store.storeINode(absolutePath, INode.DIRECTORY_INODE);
+        } else if (inode.isFile()) {
+            throw new IOException(String.format(
+                    "Can't make directory for path %s since it is a file.",
+                    absolutePath));
+        }
+        return true;
+    }
+
+    private INode checkFile(Path path) throws IOException {
+        INode inode = store.retrieveINode(makeAbsolute(path));
+        if (inode == null) {
+            throw new IOException("No such file.");
+        }
+        if (inode.isDirectory()) {
+            throw new IOException("Path " + path + " is a directory.");
+        }
+        return inode;
     }
 
     /**
@@ -273,7 +298,11 @@ public class SwiftBlockFileSystem extends FileSystem {
         if (inode == null) {
             throw new FileNotFoundException(f + ": No such file or directory.");
         }
-        return getFileStatus(f.makeQualified(this), inode);
+        try {
+            return getFileStatus(getCorrectSwiftPath(f), inode);
+        } catch (URISyntaxException e) {
+            throw new IOException("path " + f +" is incorrect", e);
+        }
     }
 
     @Override
@@ -317,5 +346,11 @@ public class SwiftBlockFileSystem extends FileSystem {
     private long getBlockSize(INode inode) {
         final Block[] ret = inode.getBlocks();
         return ret == null ? 0L : ret[0].getLength();
+    }
+
+    private Path getCorrectSwiftPath(Path path) throws URISyntaxException {
+        final URI fullUri = new URI(uri.getScheme(), uri.getAuthority(), path.toUri().getPath(), null, null);
+
+        return new Path(fullUri);
     }
 }

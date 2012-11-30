@@ -3,12 +3,13 @@ package org.apache.hadoop.swift.fs.snative;
 import org.apache.commons.httpclient.Header;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.swift.fs.SwiftObjectPath;
 import org.apache.hadoop.swift.fs.http.RestClient;
+import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -17,6 +18,11 @@ import java.util.regex.Pattern;
 
 public class SwiftFileSystemStore {
     private static final Pattern URI_PATTERN = Pattern.compile("\"\\S+?\"");
+    private URI uri;
+
+    public SwiftFileSystemStore(URI uri) {
+        this.uri = uri;
+    }
 
     private RestClient restClient = RestClient.getInstance();
 
@@ -24,7 +30,7 @@ public class SwiftFileSystemStore {
         restClient.upload(SwiftObjectPath.fromPath(path), inputStream, length);
     }
 
-    public FileStatus getObjectMetadata(Path path) {
+    public FileStatus getObjectMetadata(Path path) throws URISyntaxException {
         final Header[] headers = restClient.headRequest(SwiftObjectPath.fromPath(path));
         if (headers == null || headers.length == 0)
             return null;
@@ -51,7 +57,7 @@ public class SwiftFileSystemStore {
             }
         }
 
-        return new FileStatus(length, isDir, 0, 0l, lastModified, path);
+        return new FileStatus(length, isDir, 0, 0l, lastModified, getCorrectSwiftPath(path));
     }
 
     public InputStream getObject(Path path) {
@@ -63,7 +69,13 @@ public class SwiftFileSystemStore {
     }
 
     public FileStatus[] listSubPaths(Path path) throws IOException {
-        final Collection<FileStatus> fileStatuses = listDirectory(SwiftObjectPath.fromPath(path));
+        final Collection<FileStatus> fileStatuses;
+        try {
+            fileStatuses = listDirectory(SwiftObjectPath.fromPath(path));
+        } catch (URISyntaxException e) {
+            throw new IOException("path " + path + " is incorrect", e);
+        }
+
         return fileStatuses.toArray(new FileStatus[fileStatuses.size()]);
     }
 
@@ -91,14 +103,20 @@ public class SwiftFileSystemStore {
      * @param path to check
      * @return true - path exists, false otherwise
      */
-    public boolean objectExists(Path path) {
+    public boolean objectExists(Path path) throws URISyntaxException {
 
         return listDirectory(SwiftObjectPath.fromPath(path)).size() != 0;
     }
 
     public boolean renameDirectory(Path src, Path dst) throws IOException {
-        final List<FileStatus> fileStatuses = listDirectory(SwiftObjectPath.fromPath(src));
-        final List<FileStatus> dstPath = listDirectory(SwiftObjectPath.fromPath(dst));
+        final List<FileStatus> fileStatuses;
+        final List<FileStatus> dstPath;
+        try {
+            fileStatuses = listDirectory(SwiftObjectPath.fromPath(src));
+            dstPath = listDirectory(SwiftObjectPath.fromPath(dst));
+        } catch (URISyntaxException e) {
+            throw new IOException("path " + src + " or " + dst + " is incorrect", e);
+        }
 
         if (dstPath.size() == 1 && !dstPath.get(0).isDir())
             throw new IOException("Destination path is file: " + dst.toString());
@@ -116,7 +134,7 @@ public class SwiftFileSystemStore {
         return result;
     }
 
-    private List<FileStatus> listDirectory(SwiftObjectPath path) {
+    private List<FileStatus> listDirectory(SwiftObjectPath path) throws URISyntaxException {
         String uri = path.toUriPath();
         if (!uri.endsWith(Path.SEPARATOR))
             uri += Path.SEPARATOR;
@@ -136,6 +154,12 @@ public class SwiftFileSystemStore {
         }
 
         return files;
+    }
+
+    private Path getCorrectSwiftPath(Path path) throws URISyntaxException {
+        final URI fullUri = new URI(uri.getScheme(), uri.getAuthority(), path.toUri().getPath(), null, null);
+
+        return new Path(fullUri);
     }
 
     /**

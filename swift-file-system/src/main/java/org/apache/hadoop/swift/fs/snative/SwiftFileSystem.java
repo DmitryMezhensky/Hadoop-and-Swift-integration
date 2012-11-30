@@ -8,6 +8,7 @@ import org.apache.hadoop.util.Progressable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,13 +46,12 @@ public class SwiftFileSystem extends FileSystem {
     @Override
     public void initialize(URI uri, Configuration conf) throws IOException {
         super.initialize(uri, conf);
-
-        this.workingDir = new Path("/user", System.getProperty("user.name"));
-        this.store = new SwiftFileSystemStore();
-        this.conf = conf;
         setConf(conf);
 
         this.uri = URI.create(String.format("swift://%s:%d", uri.getHost(), uri.getPort()));
+        this.workingDir = new Path("/user", System.getProperty("user.name"));
+        this.conf = conf;
+        this.store = new SwiftFileSystemStore(this.uri);
     }
 
     /**
@@ -89,7 +89,11 @@ public class SwiftFileSystem extends FileSystem {
     @Override
     public FileStatus getFileStatus(Path f) throws IOException {
 
-        return store.getObjectMetadata(f);
+        try {
+            return store.getObjectMetadata(f);
+        } catch (URISyntaxException e) {
+            throw new IOException("path " + f + " is incorrect", e);
+        }
     }
 
     /**
@@ -147,8 +151,12 @@ public class SwiftFileSystem extends FileSystem {
      */
     private boolean mkdir(Path path) throws IOException {
         Path absolutePath = makeAbsolute(path);
-        if (!store.objectExists(absolutePath)) {
-            store.createDirectory(absolutePath);
+        try {
+            if (!store.objectExists(absolutePath)) {
+                store.createDirectory(absolutePath);
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException("path " + path +" is incorrect", e);
         }
         return true;
     }

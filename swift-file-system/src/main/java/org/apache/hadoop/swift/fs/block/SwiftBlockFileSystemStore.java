@@ -5,7 +5,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3.Block;
 import org.apache.hadoop.fs.s3.FileSystemStore;
 import org.apache.hadoop.fs.s3.INode;
-import org.apache.hadoop.swift.fs.SwiftObjectPath;
+import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
 import org.apache.hadoop.swift.fs.http.RestClient;
 import org.apache.hadoop.swift.fs.snative.SwiftFileSystemStore;
 
@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
- * @author dmezhensky
+ * Block store for Swift. Implements Hadoop S3 FileSystemStore interface.
  */
 public class SwiftBlockFileSystemStore implements FileSystemStore {
     private static final String FILE_SYSTEM_VERSION_VALUE = "1";
@@ -31,7 +31,6 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     private int bufferSize;
 
     public void initialize(URI uri, Configuration conf) throws IOException {
-
         this.conf = conf;
         this.restClient = RestClient.getInstance();
         this.bufferSize = conf.getInt("io.file.buffer.size", DEFAULT_BUFFER_SIZE);

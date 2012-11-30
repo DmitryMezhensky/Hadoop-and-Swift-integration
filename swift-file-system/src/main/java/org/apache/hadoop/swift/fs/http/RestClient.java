@@ -5,7 +5,7 @@ import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.hadoop.swift.fs.SwiftObjectPath;
+import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
 import org.apache.hadoop.swift.fs.auth.*;
 import org.apache.hadoop.swift.fs.entities.Catalog;
 import org.apache.hadoop.swift.fs.entities.Endpoint;
@@ -15,7 +15,6 @@ import org.apache.hadoop.swift.fs.util.JSONUtil;
 import org.apache.hadoop.swift.fs.util.Preconditions;
 import org.jets3t.service.impl.rest.httpclient.HttpMethodReleaseInputStream;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -459,6 +458,7 @@ public class RestClient {
      * @return REST client instance
      */
     public static RestClient getInstance() {
+
         return LazyHolder.INSTANCE;
     }
 

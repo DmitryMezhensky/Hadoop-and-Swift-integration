@@ -66,7 +66,8 @@ public class NativeSwiftInputStream extends FSInputStream {
 
     @Override
     public void close() throws IOException {
-        in.close();
+        if (in != null)
+            in.close();
     }
 
     @Override
@@ -75,10 +76,12 @@ public class NativeSwiftInputStream extends FSInputStream {
         in = store.getObject(path, pos, BUFFER_SIZE);
         this.pos = pos;
     }
+
     @Override
     public synchronized long getPos() throws IOException {
         return pos;
     }
+
     @Override
     public boolean seekToNewSource(long targetPos) throws IOException {
         return false;

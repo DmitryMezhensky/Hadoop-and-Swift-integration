@@ -15,39 +15,93 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Wraps OutputStream for streaming data into Swift directly
+ * Wraps OutputStream for streaming data into Swift
  */
 public class SwiftBlockOutputStream extends OutputStream {
+    /**
+     * Hadoop configuration
+     */
     private Configuration conf;
 
+    /**
+     * buffer size
+     */
     private int bufferSize;
 
+    /**
+     * FS store instance
+     */
     private FileSystemStore store;
 
+    /**
+     * Destination path
+     */
     private Path path;
 
+    /**
+     * size of block
+     */
     private long blockSize;
 
+    /**
+     * backup where data is writing before streaming in Swift
+     */
     private File backupFile;
 
+    /**
+     * output stream
+     */
     private OutputStream backupStream;
 
+    /**
+     * random for generating next id for block
+     */
     private Random r = new Random();
 
+    /**
+     * flag if stream closed
+     */
     private boolean closed;
 
+    /**
+     * current position
+     */
     private int pos = 0;
 
+    /**
+     * file position
+     */
     private long filePos = 0;
 
+    /**
+     * written bytes
+     */
     private int bytesWrittenToBlock = 0;
 
+    /**
+     * output buffer
+     */
     private byte[] outBuf;
 
+    /**
+     * blocks of file
+     */
     private List<Block> blocks = new ArrayList<Block>();
 
+    /**
+     * current block to store to Swift
+     */
     private Block nextBlock;
 
+    /**
+     *
+     * @param conf FS conf
+     * @param store FS store
+     * @param path file path
+     * @param blockSize size of block
+     * @param buffersize size of buffer
+     * @throws IOException
+     */
     public SwiftBlockOutputStream(Configuration conf, FileSystemStore store, Path path, long blockSize,
                                   int buffersize) throws IOException {
         this.conf = conf;
@@ -60,6 +114,12 @@ public class SwiftBlockOutputStream extends OutputStream {
         this.outBuf = new byte[bufferSize];
     }
 
+    /**
+     * method for creating backup file of 64mb where
+     * buffers are accumulated before streaming to Swift
+     * @return File
+     * @throws IOException
+     */
     private File newBackupFile() throws IOException {
         File dir = new File(conf.get("hadoop.tmp.dir"));
         if (!dir.exists() && !dir.mkdirs()) {
@@ -122,6 +182,11 @@ public class SwiftBlockOutputStream extends OutputStream {
         flushData(pos);
     }
 
+    /**
+     * Flushes data to output buffer
+     * @param maxPos position to which backup data
+     * @throws IOException
+     */
     private synchronized void flushData(int maxPos) throws IOException {
         int workingPos = Math.min(pos, maxPos);
 
@@ -140,6 +205,11 @@ public class SwiftBlockOutputStream extends OutputStream {
         }
     }
 
+    /**
+     * Stores block in Swift
+     *
+     * @throws IOException
+     */
     private synchronized void endBlock() throws IOException {
         //
         // Done with local copy
@@ -161,6 +231,11 @@ public class SwiftBlockOutputStream extends OutputStream {
         bytesWrittenToBlock = 0;
     }
 
+    /**
+     * Creates next block for output stream
+     *
+     * @throws IOException
+     */
     private synchronized void nextBlockOutputStream() throws IOException {
         long blockId = r.nextLong();
         while (store.blockExists(blockId)) {
@@ -171,6 +246,11 @@ public class SwiftBlockOutputStream extends OutputStream {
         bytesWrittenToBlock = 0;
     }
 
+    /**
+     * Close and save all information carefully on internal close
+     *
+     * @throws IOException
+     */
     private synchronized void internalClose() throws IOException {
         INode inode = new INode(INode.FILE_TYPES[1], blocks.toArray(new Block[blocks.size()]));
         store.storeINode(path, inode);

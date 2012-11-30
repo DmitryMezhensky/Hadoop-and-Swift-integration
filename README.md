@@ -1,4 +1,4 @@
-va library for [Hadoop](http://hadoop.apache.org/) and [Swift](http://docs.openstack.org/developer/swift/) integration. 
+Java library for [Hadoop](http://hadoop.apache.org/) and [Swift](http://docs.openstack.org/developer/swift/) integration. 
 
 ## Documentation
 Documentation and tutorial can be find on project [Wiki](https://github.com/DmitryMezhensky/Hadoop-and-Swift-integration/wiki)

@@ -5,10 +5,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.swift.fs.SwiftObjectPath;
+import org.apache.hadoop.fs.s3native.NativeS3FileSystem;
 import org.apache.hadoop.swift.fs.block.SwiftBlockFileSystem;
 import org.apache.hadoop.swift.fs.snative.SwiftFileSystem;
+import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.net.URI;
 
 /**
@@ -23,23 +26,5 @@ public class SwiftObjectPathTest extends TestCase {
         final SwiftObjectPath actual = new SwiftObjectPath(pathString);
 
         assertEquals(expected, actual);
-    }
-
-    public void testFoo() throws Exception {
-        final Configuration configuration = new Configuration();
-        final SwiftBlockFileSystem swiftBlockFileSystem = new SwiftBlockFileSystem(configuration);
-        swiftBlockFileSystem.initialize(new URI("http://bigdata-centos1:8080"), configuration);
-
-        final Path path = new Path("/home/dmitry/try-to-read-locally");
-        final FSDataOutputStream fsDataOutputStream = swiftBlockFileSystem.create(path);
-        fsDataOutputStream.write("file to be read locally".getBytes());
-        fsDataOutputStream.close();
-
-        final FSDataInputStream inputStream = swiftBlockFileSystem.open(path);
-        final byte[] buffer = new byte[1024];
-        while (inputStream.read(buffer) > 0) {
-            System.out.println(new String(buffer));
-        }
-
     }
 }

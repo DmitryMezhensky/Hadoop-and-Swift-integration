@@ -1,6 +1,5 @@
 package org.apache.hadoop.swift.fs.block;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.s3.Block;
@@ -13,28 +12,60 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
- * @author dmezhensky
+ * Wrapper of InputStream for Block FS implementation
  */
 public class SwiftBlockInputStream extends FSInputStream {
-
+    /**
+     * FS store instance
+     */
     private FileSystemStore store;
 
+    /**
+     * file blocks
+     */
     private Block[] blocks;
 
+    /**
+     * indicator whether stream is closed
+     */
     private boolean closed;
 
+    /**
+     * file length
+     */
     private long fileLength;
 
+    /**
+     * position in file
+     */
     private long pos = 0;
 
+    /**
+     * current block
+     */
     private File blockFile;
 
+    /**
+     * Wrapped stream blockFile
+     */
     private DataInputStream blockStream;
 
+    /**
+     * block end marker
+     */
     private long blockEnd = -1;
 
+    /**
+     * Hadoop statistics
+     */
     private FileSystem.Statistics stats;
 
+    /**
+     *
+     * @param store instance
+     * @param inode of file
+     * @param stats Hadoop statistics
+     */
     public SwiftBlockInputStream(FileSystemStore store, INode inode, FileSystem.Statistics stats) {
         this.store = store;
         this.stats = stats;
@@ -111,6 +142,11 @@ public class SwiftBlockInputStream extends FSInputStream {
         return -1;
     }
 
+    /**
+     * Seeks and retrieves need block of data from Swift
+     * @param target position in file
+     * @throws IOException
+     */
     private synchronized void blockSeekTo(long target) throws IOException {
         //
         // Compute desired block

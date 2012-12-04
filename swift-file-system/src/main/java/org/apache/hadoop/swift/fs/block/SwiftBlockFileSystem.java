@@ -1,10 +1,13 @@
 package org.apache.hadoop.swift.fs.block;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.s3.Block;
 import org.apache.hadoop.fs.s3.INode;
+import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
 import org.apache.hadoop.util.Progressable;
 
 import java.io.FileNotFoundException;
@@ -12,6 +15,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,6 +23,7 @@ import java.util.List;
  * another applications can't read data in such representation
  */
 public class SwiftBlockFileSystem extends FileSystem {
+    private static final Log LOG = LogFactory.getLog(SwiftBlockFileSystem.class);
     /**
      * fs URI
      */
@@ -43,12 +48,13 @@ public class SwiftBlockFileSystem extends FileSystem {
     @Override
     public void initialize(URI uri, Configuration conf) throws IOException {
         super.initialize(uri, conf);
+        setConf(conf);
+
         if (store == null) {
             store = new SwiftBlockFileSystemStore();
             store.initialize(uri, conf);
         }
         store.initialize(uri, conf);
-        setConf(conf);
         this.uri = URI.create(String.format("bswift://%s:%d", uri.getHost(), uri.getPort()));
         this.workingDir = new Path("/user", System.getProperty("user.name")).makeQualified(this);
     }
@@ -175,7 +181,6 @@ public class SwiftBlockFileSystem extends FileSystem {
                                      boolean overwrite, int bufferSize,
                                      short replication, long blockSize, Progressable progress)
             throws IOException {
-
         INode inode = store.retrieveINode(makeAbsolute(file));
         if (inode != null) {
             if (overwrite) {
@@ -307,22 +312,34 @@ public class SwiftBlockFileSystem extends FileSystem {
 
     @Override
     public BlockLocation[] getFileBlockLocations(FileStatus file, long start, long len) throws IOException {
-        final List<URI> locations = store.getObjectLocation(file.getPath());
-        final String[] names = new String[locations.size()];
-        final String[] hosts = new String[locations.size()];
-        int i = 0;
-        for (URI uri : locations) {
-            hosts[i] = uri.getHost();
-            names[i] = uri.getAuthority();
-            i++;
+        final INode iNode = store.retrieveINode(file.getPath());
+        final BlockLocation[] blockLocations = new BlockLocation[iNode.getBlocks().length];
+
+        int idx = 0;
+        long offset = 0l;
+        for (Block block : iNode.getBlocks()) {
+            final List<URI> locations =
+                    store.getObjectLocation(new Path(new SwiftObjectPath(String.valueOf(block.getId())).toString()));
+            final String[] names = new String[locations.size()];
+            final String[] hosts = new String[locations.size()];
+            int i = 0;
+            for (URI uri : locations) {
+                hosts[i] = uri.getHost();
+                names[i] = uri.getAuthority();
+                i++;
+            }
+            blockLocations[idx++] = new BlockLocation(names, hosts, offset, block.getLength());
+            offset += block.getLength();
+            LOG.info("block location: " + Arrays.toString(names) +
+                    " hosts  " + Arrays.toString(hosts) + " : length: " + block.getLength());
         }
 
-        return new BlockLocation[]{new BlockLocation(names, hosts, 0, locations.size())};
+        return blockLocations;
     }
 
     @Override
     public long getDefaultBlockSize() {
-        //64 mb by default
+        //64 mb
         return 64 * 1024 * 1024;
     }
 

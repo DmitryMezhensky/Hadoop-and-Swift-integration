@@ -6,9 +6,10 @@ import org.apache.hadoop.fs.Path;
 import java.io.*;
 
 /**
- * @author dmezhensky
+ * Output stream, buffers data on local disk.
+ * Writes to Swift on close() method
  */
-public class NativeSwiftOutputStream extends OutputStream {
+class NativeSwiftOutputStream extends OutputStream {
 
     private Configuration conf;
     private String key;

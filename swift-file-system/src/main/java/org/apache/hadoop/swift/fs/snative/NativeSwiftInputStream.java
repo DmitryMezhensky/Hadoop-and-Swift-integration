@@ -8,15 +8,38 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * @author dmezhensky
+ * Wrapper for input stream
  */
-public class NativeSwiftInputStream extends FSInputStream {
+class NativeSwiftInputStream extends FSInputStream {
+
+    /**
+     * Default buffer size
+     */
     private static final long BUFFER_SIZE = 1024 * 1024;
 
+    /**
+     * File store instance
+     */
     private SwiftFileSystemStore store;
+
+    /**
+     * Hadoop statistics. Used to get info about number of reads, writes, etc.
+     */
     private FileSystem.Statistics statistics;
+
+    /**
+     * Data input stream
+     */
     private InputStream in;
+
+    /**
+     * File path
+     */
     private final Path path;
+
+    /**
+     * Current position
+     */
     private long pos = 0;
 
     public NativeSwiftInputStream(SwiftFileSystemStore store, FileSystem.Statistics statistics, Path path) {
@@ -45,9 +68,7 @@ public class NativeSwiftInputStream extends FSInputStream {
     }
 
     @Override
-    public synchronized int read(byte[] b, int off, int len)
-            throws IOException {
-
+    public synchronized int read(byte[] b, int off, int len) throws IOException {
         int result;
         try {
             result = in.read(b, off, len);

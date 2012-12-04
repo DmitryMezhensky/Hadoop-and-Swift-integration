@@ -1,5 +1,7 @@
 package org.apache.hadoop.swift.fs.block;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.s3.Block;
@@ -10,6 +12,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Wrapper of InputStream for Block FS implementation
@@ -61,7 +64,6 @@ public class SwiftBlockInputStream extends FSInputStream {
     private FileSystem.Statistics stats;
 
     /**
-     *
      * @param store instance
      * @param inode of file
      * @param stats Hadoop statistics
@@ -114,7 +116,7 @@ public class SwiftBlockInputStream extends FSInputStream {
                 pos++;
             }
         }
-        if (stats != null & result >= 0) {
+        if (stats != null && result >= 0) {
             stats.incrementBytesRead(1);
         }
         return result;
@@ -144,6 +146,7 @@ public class SwiftBlockInputStream extends FSInputStream {
 
     /**
      * Seeks and retrieves need block of data from Swift
+     *
      * @param target position in file
      * @throws IOException
      */
@@ -166,19 +169,15 @@ public class SwiftBlockInputStream extends FSInputStream {
             }
         }
         if (targetBlock < 0) {
-            throw new IOException(
-                    "Impossible situation: could not find target position " + target);
+            throw new IOException("Impossible situation: could not find target position " + target);
         }
         long offsetIntoBlock = target - targetBlockStart;
-
-        // read block blocks[targetBlock] from position offsetIntoBlock
 
         this.blockFile = store.retrieveBlock(blocks[targetBlock], offsetIntoBlock);
 
         this.pos = target;
         this.blockEnd = targetBlockEnd;
         this.blockStream = new DataInputStream(new FileInputStream(blockFile));
-
     }
 
     @Override
@@ -207,12 +206,11 @@ public class SwiftBlockInputStream extends FSInputStream {
 
     @Override
     public void mark(int readLimit) {
-        // Do nothing
+        // marks not supported
     }
 
     @Override
     public void reset() throws IOException {
         throw new IOException("Mark not supported");
     }
-
 }

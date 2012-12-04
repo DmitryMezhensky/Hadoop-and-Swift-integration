@@ -16,8 +16,13 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * File system store implementation.
+ * Makes REST requests, parses data from responses
+ */
 public class SwiftFileSystemStore {
     private static final Pattern URI_PATTERN = Pattern.compile("\"\\S+?\"");
+    private static final String PATTERN = "EEE, d MMM yyyy hh:mm:ss zzz";
     private URI uri;
 
     public SwiftFileSystemStore(URI uri) {
@@ -48,11 +53,11 @@ public class SwiftFileSystemStore {
                 length = Long.parseLong(header.getValue());
             }
             if (header.getName().equals("Last-Modified")) {
-                final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("EEE, d MMM yyyy hh:mm:ss zzz");
+                final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(PATTERN);
                 try {
                     lastModified = simpleDateFormat.parse(header.getValue()).getTime();
                 } catch (ParseException e) {
-                    throw new RuntimeException("date format is wrong", e);
+                    e.printStackTrace();
                 }
             }
         }

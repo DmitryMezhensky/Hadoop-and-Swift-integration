@@ -88,7 +88,6 @@ public class SwiftFileSystem extends FileSystem {
      */
     @Override
     public FileStatus getFileStatus(Path f) throws IOException {
-
         try {
             return store.getObjectMetadata(f);
         } catch (URISyntaxException e) {
@@ -109,6 +108,7 @@ public class SwiftFileSystem extends FileSystem {
     @Override
     public BlockLocation[] getFileBlockLocations(FileStatus file, long start, long len) {
         final List<URI> locations = store.getObjectLocation(file.getPath());
+
         final String[] names = new String[locations.size()];
         final String[] hosts = new String[locations.size()];
         int i = 0;
@@ -117,7 +117,7 @@ public class SwiftFileSystem extends FileSystem {
             names[i] = uri.getAuthority();
             i++;
         }
-        return new BlockLocation[]{new BlockLocation(names, hosts, 0, locations.size())};
+        return new BlockLocation[]{new BlockLocation(names, hosts, 0, file.getLen())};
     }
 
     /**
@@ -156,7 +156,7 @@ public class SwiftFileSystem extends FileSystem {
                 store.createDirectory(absolutePath);
             }
         } catch (URISyntaxException e) {
-            throw new IOException("path " + path +" is incorrect", e);
+            throw new IOException("path " + path + " is incorrect", e);
         }
         return true;
     }
@@ -218,7 +218,8 @@ public class SwiftFileSystem extends FileSystem {
     @Override
     public FSDataInputStream open(Path path, int bufferSize) throws IOException {
 
-        return new FSDataInputStream(new NativeSwiftInputStream(store, statistics, path));
+        return new FSDataInputStream(
+                new BufferedFSInputStream(new NativeSwiftInputStream(store, statistics, path), bufferSize));
     }
 
     /**

@@ -11,7 +11,7 @@ public class SwiftObjectPath {
     private static final Pattern PATH_PART_PATTERN = Pattern.compile(".*/AUTH_\\w*/");
 
 
-    //TODO: !!!!!!!!!!!!!!! currently container name is hardcoded. Not clear how to make it modifiable
+    //TODO: currently container name is hardcoded. Will be modified soon
     /**
      * Swift container
      */

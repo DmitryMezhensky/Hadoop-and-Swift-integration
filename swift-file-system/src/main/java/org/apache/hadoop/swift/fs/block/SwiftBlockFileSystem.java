@@ -328,7 +328,7 @@ public class SwiftBlockFileSystem extends FileSystem {
       }
       blockLocations[idx++] = new BlockLocation(names, hosts, offset, block.getLength());
       offset += block.getLength();
-      LOG.info("block location: " + Arrays.toString(names) +
+      LOG.debug("block location: " + Arrays.toString(names) +
               " hosts  " + Arrays.toString(hosts) + " : length: " + block.getLength());
     }
 

@@ -22,11 +22,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * @author vsorokin
+ *
  */
 public class TestJob extends Configured implements Tool {
     public static class TestMapper extends Mapper<LongWritable, Text, NullWritable, Text> {
         private static final InetAddress LOCAL;
+
         static {
             try {
                 LOCAL = InetAddress.getLocalHost();
@@ -47,9 +48,16 @@ public class TestJob extends Configured implements Tool {
     @Override
     public int run(String[] args) throws Exception {
         final Configuration conf = getConf();
-        conf.set("io.sort.mb", "32");
+        conf.set("mapred.min.split.size", String.valueOf(32 * 1024 * 1024));
+        conf.set("mapred.max.split.size", String.valueOf(64 * 1024 * 1024));
 
-        conf.set("fs.swift.impl", "org.apache.hadoop.swift.fs.snative.SwiftFileSystem"); // TODO remove
+        //Swift auth properties
+        conf.set("swift.auth.url", "http://172.18.66.117:5000/v2.0/tokens");
+        conf.set("swift.tenant", "superuser");
+        conf.set("swift.username", "admin1");
+        conf.set("swift.password", "password");
+        conf.setInt("swift.http.port", 8080);
+        conf.setInt("swift.https.port", 443);
 
         final Job job = new Job(conf, "Test Job");
         job.setJarByClass(TestJob.class);
@@ -64,7 +72,6 @@ public class TestJob extends Configured implements Tool {
         job.setMapOutputValueClass(Text.class);
 
         job.setMapperClass(TestMapper.class);
-
 
 
         return job.waitForCompletion(true) ? 0 : 1;

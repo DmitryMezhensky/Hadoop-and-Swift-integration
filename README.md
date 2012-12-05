@@ -6,3 +6,6 @@ Documentation and tutorial can be find on project [Wiki](https://github.com/Dmit
 
 ## License
 The use and distribution terms for this software are covered by Apache License 2.0
+
+## References
+Reference to Hadoop issue [HADOOP-8545](https://issues.apache.org/jira/browse/HADOOP-8545)

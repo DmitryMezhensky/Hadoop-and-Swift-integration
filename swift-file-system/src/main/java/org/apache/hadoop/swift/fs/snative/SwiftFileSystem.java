@@ -51,7 +51,7 @@ public class SwiftFileSystem extends FileSystem {
         this.uri = URI.create(String.format("swift://%s:%d", uri.getHost(), uri.getPort()));
         this.workingDir = new Path("/user", System.getProperty("user.name"));
         this.conf = conf;
-        this.store = new SwiftFileSystemStore(this.uri);
+        this.store = new SwiftFileSystemStore(this.uri, conf);
     }
 
     /**

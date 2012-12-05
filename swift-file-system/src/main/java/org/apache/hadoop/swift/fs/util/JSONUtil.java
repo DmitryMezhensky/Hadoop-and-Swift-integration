@@ -12,24 +12,18 @@ import java.io.Writer;
 
 public class JSONUtil {
     private static ObjectMapper jsonMapper = new ObjectMapper();
-    /*static {
-         jsonMapper.configure(SerializationConfig.Feature.USE_STATIC_TYPING,
-                 true); // faster this way, not default*
-     }*/
 
     /**
      * Private constructor.
      */
     private JSONUtil() {
-        // empty
     }
 
     /**
      * Converting object to JSON string. If errors appears throw
      * MeshinException runtime exception.
      *
-     * @param object
-     *            The object to convert.
+     * @param object The object to convert.
      * @return The JSON string representation.
      */
     public static String toJSON(Object object) {

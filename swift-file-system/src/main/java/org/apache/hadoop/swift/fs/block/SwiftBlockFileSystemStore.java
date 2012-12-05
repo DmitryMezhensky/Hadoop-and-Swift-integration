@@ -5,9 +5,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3.Block;
 import org.apache.hadoop.fs.s3.FileSystemStore;
 import org.apache.hadoop.fs.s3.INode;
-import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
 import org.apache.hadoop.swift.fs.http.RestClient;
 import org.apache.hadoop.swift.fs.snative.SwiftFileSystemStore;
+import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
 
 import java.io.*;
 import java.net.URI;
@@ -25,14 +25,13 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     private static final String BLOCK_PREFIX = "block_";
 
     private Configuration conf;
-
     private RestClient restClient;
 
     private int bufferSize;
 
     public void initialize(URI uri, Configuration conf) throws IOException {
         this.conf = conf;
-        this.restClient = RestClient.getInstance();
+        this.restClient = RestClient.getInstance(conf);
         this.bufferSize = conf.getInt("io.file.buffer.size", DEFAULT_BUFFER_SIZE);
     }
 

@@ -5,14 +5,17 @@ import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.swift.fs.auth.*;
 import org.apache.hadoop.swift.fs.entities.Catalog;
 import org.apache.hadoop.swift.fs.entities.Endpoint;
 import org.apache.hadoop.swift.fs.exceptions.SwiftConnectionException;
 import org.apache.hadoop.swift.fs.exceptions.SwiftIllegalDataLocalityRequest;
+import org.apache.hadoop.swift.fs.ssl.EasySSLProtocolSocketFactory;
 import org.apache.hadoop.swift.fs.util.JSONUtil;
 import org.apache.hadoop.swift.fs.util.Preconditions;
+import org.apache.hadoop.swift.fs.util.SwiftObjectPath;
 import org.jets3t.service.impl.rest.httpclient.HttpMethodReleaseInputStream;
 
 import java.io.IOException;
@@ -21,11 +24,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Properties;
 
 
 public class RestClient {
     private static final String HEADER_AUTH_KEY = "X-Auth-Token";
+
+    public static final String SWIFT_AUTH_PROPERTY = "swift.auth.url";
+    public static final String SWIFT_TENANT_PROPERTY = "swift.tenant";
+    public static final String SWIFT_USERNAME_PROPERTY = "swift.username";
+    public static final String SWIFT_PASSWORD_PROPERTY = "swift.password";
+    public static final String SWIFT_HTTP_PROTOCOL = "swift.http.port";
+    public static final String SWIFT_HTTPS_PROTOCOL = "swift.https.port";
 
     /**
      * authentication endpoint
@@ -125,30 +134,36 @@ public class RestClient {
         }
     }
 
-    private static class LazyHolder {
-        private static final RestClient INSTANCE = new RestClient();
-    }
+    private static Configuration configuration;
+    private static RestClient INSTANCE;
 
-    static {
-        Protocol.registerProtocol("http", new Protocol("http", new DefaultProtocolSocketFactory(), 8080));
-    }
-
-    private RestClient() {
-        final Properties properties = new Properties();
+    private RestClient(Configuration configuration) {
         try {
-            properties.load(this.getClass().getClassLoader()
-                    .getResourceAsStream("swift.properties"));
+            Protocol.registerProtocol("http", new Protocol("http", new DefaultProtocolSocketFactory(),
+                    configuration.getInt(SWIFT_HTTP_PROTOCOL, 8080)));
+            Protocol.registerProtocol("https",
+                    new Protocol("https", (ProtocolSocketFactory) new EasySSLProtocolSocketFactory(),
+                            configuration.getInt(SWIFT_HTTPS_PROTOCOL, 443)));
 
-            this.authUri = new URI(properties.getProperty("auth.url"));
-            this.tenant = properties.getProperty("tenant");
-            this.username = properties.getProperty("username");
-            this.password = properties.getProperty("password");
+            final String stringAuthUri = configuration.get(SWIFT_AUTH_PROPERTY);
+            this.tenant = configuration.get(SWIFT_TENANT_PROPERTY);
+            this.username = configuration.get(SWIFT_USERNAME_PROPERTY);
+            this.password = configuration.get(SWIFT_PASSWORD_PROPERTY);
+
+            if (stringAuthUri == null)
+                throw new IllegalArgumentException("Property swift.auth.url is not set");
+            if (this.tenant == null)
+                throw new IllegalArgumentException("Property swift.tenant is not set");
+            if (this.username == null)
+                throw new IllegalArgumentException("Property swift.username is not set");
+            if (this.password == null)
+                throw new IllegalArgumentException("Property swift.password is not set");
+
+            this.authUri = new URI(stringAuthUri);
 
             token = authenticate();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException("specified swift.auth.url property was incorrect ", e);
         }
 
     }
@@ -457,9 +472,40 @@ public class RestClient {
     /**
      * @return REST client instance
      */
-    public static RestClient getInstance() {
+    public static RestClient getInstance(Configuration config) {
+        if (configuration == null && INSTANCE == null) {
+            configuration = config;
+            INSTANCE = new RestClient(config);
+            return INSTANCE;
+        } else {
+            if (!checkConfigEquality(config))
+                INSTANCE = new RestClient(config);
 
-        return LazyHolder.INSTANCE;
+            return INSTANCE;
+        }
+    }
+
+    private static boolean checkConfigEquality(Configuration current) {
+        if (!configuration.get(SWIFT_TENANT_PROPERTY, "default-unset-property").
+                equals(current.get(SWIFT_TENANT_PROPERTY, "default-unset-property")))
+            return false;
+        if (!configuration.get(SWIFT_AUTH_PROPERTY, "default-unset-property").
+                equals(current.get(SWIFT_AUTH_PROPERTY, "default-unset-property")))
+            return false;
+        if (!configuration.get(SWIFT_HTTP_PROTOCOL, "default-unset-property").
+                equals(current.get(SWIFT_HTTP_PROTOCOL, "default-unset-property")))
+            return false;
+        if (!configuration.get(SWIFT_HTTPS_PROTOCOL, "default-unset-property").
+                equals(current.get(SWIFT_HTTPS_PROTOCOL, "default-unset-property")))
+            return false;
+        if (!configuration.get(SWIFT_USERNAME_PROPERTY, "default-unset-property").
+                equals(current.get(SWIFT_USERNAME_PROPERTY, "default-unset-property")))
+            return false;
+        if (!configuration.get(SWIFT_PASSWORD_PROPERTY, "default-unset-property").
+                equals(current.get(SWIFT_PASSWORD_PROPERTY, "default-unset-property")))
+            return false;
+
+        return true;
     }
 
     /**

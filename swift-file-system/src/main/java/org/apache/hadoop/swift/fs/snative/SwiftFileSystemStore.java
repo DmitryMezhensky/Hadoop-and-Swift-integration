@@ -1,6 +1,7 @@
 package org.apache.hadoop.swift.fs.snative;
 
 import org.apache.commons.httpclient.Header;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.swift.fs.http.RestClient;
@@ -24,12 +25,12 @@ public class SwiftFileSystemStore {
     private static final Pattern URI_PATTERN = Pattern.compile("\"\\S+?\"");
     private static final String PATTERN = "EEE, d MMM yyyy hh:mm:ss zzz";
     private URI uri;
+    private final RestClient restClient;
 
-    public SwiftFileSystemStore(URI uri) {
+    public SwiftFileSystemStore(URI uri, Configuration configuration) {
         this.uri = uri;
+        this.restClient = RestClient.getInstance(configuration);
     }
-
-    private RestClient restClient = RestClient.getInstance();
 
     public void uploadFile(Path path, InputStream inputStream, long length) {
         restClient.upload(SwiftObjectPath.fromPath(path), inputStream, length);

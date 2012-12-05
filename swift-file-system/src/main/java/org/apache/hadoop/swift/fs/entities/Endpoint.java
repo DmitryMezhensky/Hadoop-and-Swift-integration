@@ -7,109 +7,99 @@ import java.net.URI;
  */
 public class Endpoint {
 
-    /**
-     * endpoint id
-     */
-    private String id;
+  /**
+   * endpoint id
+   */
+  private String id;
 
-    /**
-     * Keystone admin URL
-     */
-    private URI adminURL;
+  /**
+   * Keystone admin URL
+   */
+  private URI adminURL;
 
-    /**
-     * Keystone internal URL
-     */
-    private URI internalURL;
+  /**
+   * Keystone internal URL
+   */
+  private URI internalURL;
 
-    /**
-     * public accessible URL
-     */
-    private URI publicURL;
+  /**
+   * public accessible URL
+   */
+  private URI publicURL;
 
-    /**
-     * Openstack region name
-     */
-    private String region;
+  /**
+   * Openstack region name
+   */
+  private String region;
 
-    /**
-     *
-     * @return endpoint id
-     */
-    public String getId() {
-        return id;
-    }
+  /**
+   * @return endpoint id
+   */
+  public String getId() {
+    return id;
+  }
 
-    /**
-     *
-     * @param id endpoint id
-     */
-    public void setId(String id) {
-        this.id = id;
-    }
+  /**
+   * @param id endpoint id
+   */
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    /**
-     *
-     * @return Keystone admin URL
-     */
-    public URI getAdminURL() {
-        return adminURL;
-    }
+  /**
+   * @return Keystone admin URL
+   */
+  public URI getAdminURL() {
+    return adminURL;
+  }
 
-    /**
-     *
-     * @param adminURL Keystone admin URL
-     */
-    public void setAdminURL(URI adminURL) {
-        this.adminURL = adminURL;
-    }
+  /**
+   * @param adminURL Keystone admin URL
+   */
+  public void setAdminURL(URI adminURL) {
+    this.adminURL = adminURL;
+  }
 
-    /**
-     *
-     * @return internal Keystone
-     */
-    public URI getInternalURL() {
-        return internalURL;
-    }
+  /**
+   * @return internal Keystone
+   */
+  public URI getInternalURL() {
+    return internalURL;
+  }
 
-    /**
-     *
-     * @param internalURL Keystone internal URL
-     */
-    public void setInternalURL(URI internalURL) {
-        this.internalURL = internalURL;
-    }
+  /**
+   * @param internalURL Keystone internal URL
+   */
+  public void setInternalURL(URI internalURL) {
+    this.internalURL = internalURL;
+  }
 
-    /**
-     *
-     * @return public accessible URL
-     */
-    public URI getPublicURL() {
-        return publicURL;
-    }
+  /**
+   * @return public accessible URL
+   */
+  public URI getPublicURL() {
+    return publicURL;
+  }
 
-    /**
-     *
-     * @param publicURL public URL
-     */
-    public void setPublicURL(URI publicURL) {
-        this.publicURL = publicURL;
-    }
+  /**
+   * @param publicURL public URL
+   */
+  public void setPublicURL(URI publicURL) {
+    this.publicURL = publicURL;
+  }
 
 
-    /**
-     *
-     * @return Openstack region name
-     */
-    public String getRegion() {
-        return region;
-    }
+  /**
+   * @return Openstack region name
+   */
+  public String getRegion() {
+    return region;
+  }
 
-    /**
-     *
-     * @param region Openstack region name
-     */
-    public void setRegion(String region) {
-        this.region = region;
-    }
+  /**
+   * @param region Openstack region name
+   */
+  public void setRegion(String region) {
+    this.region = region;
+  }
 }

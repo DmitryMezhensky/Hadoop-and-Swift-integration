@@ -22,165 +22,165 @@ import java.util.regex.Pattern;
  * Makes REST requests, parses data from responses
  */
 public class SwiftFileSystemStore {
-    private static final Pattern URI_PATTERN = Pattern.compile("\"\\S+?\"");
-    private static final String PATTERN = "EEE, d MMM yyyy hh:mm:ss zzz";
-    private URI uri;
-    private final RestClient restClient;
+  private static final Pattern URI_PATTERN = Pattern.compile("\"\\S+?\"");
+  private static final String PATTERN = "EEE, d MMM yyyy hh:mm:ss zzz";
+  private URI uri;
+  private final RestClient restClient;
 
-    public SwiftFileSystemStore(URI uri, Configuration configuration) {
-        this.uri = uri;
-        this.restClient = RestClient.getInstance(configuration);
-    }
+  public SwiftFileSystemStore(URI uri, Configuration configuration) {
+    this.uri = uri;
+    this.restClient = RestClient.getInstance(configuration);
+  }
 
-    public void uploadFile(Path path, InputStream inputStream, long length) {
-        restClient.upload(SwiftObjectPath.fromPath(path), inputStream, length);
-    }
+  public void uploadFile(Path path, InputStream inputStream, long length) {
+    restClient.upload(SwiftObjectPath.fromPath(path), inputStream, length);
+  }
 
-    public FileStatus getObjectMetadata(Path path) throws URISyntaxException {
-        final Header[] headers = restClient.headRequest(SwiftObjectPath.fromPath(path));
-        if (headers == null || headers.length == 0)
-            return null;
+  public FileStatus getObjectMetadata(Path path) throws URISyntaxException {
+    final Header[] headers = restClient.headRequest(SwiftObjectPath.fromPath(path));
+    if (headers == null || headers.length == 0)
+      return null;
 
-        boolean isDir = false;
-        long length = 0;
-        long lastModified = System.currentTimeMillis();
-        for (Header header : headers) {
-            if (header.getName().equals("X-Container-Object-Count") ||
-                    header.getName().equals("X-Container-Bytes-Used")) {
-                length = 0;
-                isDir = true;
-            }
-            if (header.getName().equals("Content-Length")) {
-                length = Long.parseLong(header.getValue());
-            }
-            if (header.getName().equals("Last-Modified")) {
-                final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(PATTERN);
-                try {
-                    lastModified = simpleDateFormat.parse(header.getValue()).getTime();
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return new FileStatus(length, isDir, 0, 0l, lastModified, getCorrectSwiftPath(path));
-    }
-
-    public InputStream getObject(Path path) {
-        return restClient.getDataAsInputStream(SwiftObjectPath.fromPath(path));
-    }
-
-    public InputStream getObject(Path path, long byteRangeStart, long length) {
-        return restClient.getDataAsInputStream(SwiftObjectPath.fromPath(path), byteRangeStart, length);
-    }
-
-    public FileStatus[] listSubPaths(Path path) throws IOException {
-        final Collection<FileStatus> fileStatuses;
+    boolean isDir = false;
+    long length = 0;
+    long lastModified = System.currentTimeMillis();
+    for (Header header : headers) {
+      if (header.getName().equals("X-Container-Object-Count") ||
+              header.getName().equals("X-Container-Bytes-Used")) {
+        length = 0;
+        isDir = true;
+      }
+      if (header.getName().equals("Content-Length")) {
+        length = Long.parseLong(header.getValue());
+      }
+      if (header.getName().equals("Last-Modified")) {
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(PATTERN);
         try {
-            fileStatuses = listDirectory(SwiftObjectPath.fromPath(path));
-        } catch (URISyntaxException e) {
-            throw new IOException("path " + path + " is incorrect", e);
+          lastModified = simpleDateFormat.parse(header.getValue()).getTime();
+        } catch (ParseException e) {
+          e.printStackTrace();
         }
-
-        return fileStatuses.toArray(new FileStatus[fileStatuses.size()]);
+      }
     }
 
-    public void createDirectory(Path path) {
+    return new FileStatus(length, isDir, 0, 0l, lastModified, getCorrectSwiftPath(path));
+  }
 
-        restClient.putRequest(SwiftObjectPath.fromPath(path));
+  public InputStream getObject(Path path) {
+    return restClient.getDataAsInputStream(SwiftObjectPath.fromPath(path));
+  }
+
+  public InputStream getObject(Path path, long byteRangeStart, long length) {
+    return restClient.getDataAsInputStream(SwiftObjectPath.fromPath(path), byteRangeStart, length);
+  }
+
+  public FileStatus[] listSubPaths(Path path) throws IOException {
+    final Collection<FileStatus> fileStatuses;
+    try {
+      fileStatuses = listDirectory(SwiftObjectPath.fromPath(path));
+    } catch (URISyntaxException e) {
+      throw new IOException("path " + path + " is incorrect", e);
     }
 
-    public List<URI> getObjectLocation(Path path) {
-        final byte[] objectLocation = restClient.getObjectLocation(SwiftObjectPath.fromPath(path));
-        return extractUris(new String(objectLocation));
+    return fileStatuses.toArray(new FileStatus[fileStatuses.size()]);
+  }
+
+  public void createDirectory(Path path) {
+
+    restClient.putRequest(SwiftObjectPath.fromPath(path));
+  }
+
+  public List<URI> getObjectLocation(Path path) {
+    final byte[] objectLocation = restClient.getObjectLocation(SwiftObjectPath.fromPath(path));
+    return extractUris(new String(objectLocation));
+  }
+
+  /**
+   * deletes object from Swift
+   */
+  public void deleteObject(Path path) throws IOException {
+
+    restClient.delete(SwiftObjectPath.fromPath(path));
+  }
+
+  /**
+   * Checks if specified path exists
+   *
+   * @param path to check
+   * @return true - path exists, false otherwise
+   */
+  public boolean objectExists(Path path) throws URISyntaxException {
+
+    return listDirectory(SwiftObjectPath.fromPath(path)).size() != 0;
+  }
+
+  public boolean renameDirectory(Path src, Path dst) throws IOException {
+    final List<FileStatus> fileStatuses;
+    final List<FileStatus> dstPath;
+    try {
+      fileStatuses = listDirectory(SwiftObjectPath.fromPath(src));
+      dstPath = listDirectory(SwiftObjectPath.fromPath(dst));
+    } catch (URISyntaxException e) {
+      throw new IOException("path " + src + " or " + dst + " is incorrect", e);
     }
 
-    /**
-     * deletes object from Swift
-     */
-    public void deleteObject(Path path) throws IOException {
+    if (dstPath.size() == 1 && !dstPath.get(0).isDir())
+      throw new IOException("Destination path is file: " + dst.toString());
 
-        restClient.delete(SwiftObjectPath.fromPath(path));
+    boolean result = true;
+    for (FileStatus fileStatus : fileStatuses) {
+      if (!fileStatus.isDir()) {
+        result &= restClient.copyObject(SwiftObjectPath.fromPath(fileStatus.getPath()),
+                SwiftObjectPath.fromPath(dst));
+
+        restClient.delete(SwiftObjectPath.fromPath(fileStatus.getPath()));
+      }
     }
 
-    /**
-     * Checks if specified path exists
-     *
-     * @param path to check
-     * @return true - path exists, false otherwise
-     */
-    public boolean objectExists(Path path) throws URISyntaxException {
+    return result;
+  }
 
-        return listDirectory(SwiftObjectPath.fromPath(path)).size() != 0;
+  private List<FileStatus> listDirectory(SwiftObjectPath path) throws URISyntaxException {
+    String uri = path.toUriPath();
+    if (!uri.endsWith(Path.SEPARATOR))
+      uri += Path.SEPARATOR;
+
+    final byte[] bytes = restClient.findObjectsByPrefix(path);
+    if (bytes == null)
+      return Collections.emptyList();
+
+    final StringTokenizer tokenizer = new StringTokenizer(new String(bytes), "\n");
+    final ArrayList<FileStatus> files = new ArrayList<FileStatus>();
+
+    while (tokenizer.hasMoreTokens()) {
+      final String pathInSwift = tokenizer.nextToken();
+      final FileStatus metadata = getObjectMetadata(new Path(pathInSwift));
+      if (metadata != null)
+        files.add(metadata);
     }
 
-    public boolean renameDirectory(Path src, Path dst) throws IOException {
-        final List<FileStatus> fileStatuses;
-        final List<FileStatus> dstPath;
-        try {
-            fileStatuses = listDirectory(SwiftObjectPath.fromPath(src));
-            dstPath = listDirectory(SwiftObjectPath.fromPath(dst));
-        } catch (URISyntaxException e) {
-            throw new IOException("path " + src + " or " + dst + " is incorrect", e);
-        }
+    return files;
+  }
 
-        if (dstPath.size() == 1 && !dstPath.get(0).isDir())
-            throw new IOException("Destination path is file: " + dst.toString());
+  private Path getCorrectSwiftPath(Path path) throws URISyntaxException {
+    final URI fullUri = new URI(uri.getScheme(), uri.getAuthority(), path.toUri().getPath(), null, null);
 
-        boolean result = true;
-        for (FileStatus fileStatus : fileStatuses) {
-            if (!fileStatus.isDir()) {
-                result &= restClient.copyObject(SwiftObjectPath.fromPath(fileStatus.getPath()),
-                        SwiftObjectPath.fromPath(dst));
+    return new Path(fullUri);
+  }
 
-                restClient.delete(SwiftObjectPath.fromPath(fileStatus.getPath()));
-            }
-        }
-
-        return result;
+  /**
+   * extracts URIs from json
+   *
+   * @return URIs
+   */
+  public static List<URI> extractUris(String json) {
+    final Matcher matcher = URI_PATTERN.matcher(json);
+    final List<URI> result = new ArrayList<URI>();
+    while (matcher.find()) {
+      final String s = matcher.group();
+      final String uri = s.substring(1, s.length() - 1);
+      result.add(URI.create(uri));
     }
-
-    private List<FileStatus> listDirectory(SwiftObjectPath path) throws URISyntaxException {
-        String uri = path.toUriPath();
-        if (!uri.endsWith(Path.SEPARATOR))
-            uri += Path.SEPARATOR;
-
-        final byte[] bytes = restClient.findObjectsByPrefix(path);
-        if (bytes == null)
-            return Collections.emptyList();
-
-        final StringTokenizer tokenizer = new StringTokenizer(new String(bytes), "\n");
-        final ArrayList<FileStatus> files = new ArrayList<FileStatus>();
-
-        while (tokenizer.hasMoreTokens()) {
-            final String pathInSwift = tokenizer.nextToken();
-            final FileStatus metadata = getObjectMetadata(new Path(pathInSwift));
-            if (metadata != null)
-                files.add(metadata);
-        }
-
-        return files;
-    }
-
-    private Path getCorrectSwiftPath(Path path) throws URISyntaxException {
-        final URI fullUri = new URI(uri.getScheme(), uri.getAuthority(), path.toUri().getPath(), null, null);
-
-        return new Path(fullUri);
-    }
-
-    /**
-     * extracts URIs from json
-     *
-     * @return URIs
-     */
-    public static List<URI> extractUris(String json) {
-        final Matcher matcher = URI_PATTERN.matcher(json);
-        final List<URI> result = new ArrayList<URI>();
-        while (matcher.find()) {
-            final String s = matcher.group();
-            final String uri = s.substring(1, s.length() - 1);
-            result.add(URI.create(uri));
-        }
-        return result;
-    }
+    return result;
+  }
 }

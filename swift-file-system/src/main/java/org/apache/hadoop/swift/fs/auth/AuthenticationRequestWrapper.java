@@ -5,38 +5,35 @@ package org.apache.hadoop.swift.fs.auth;
  * Keystone authentication model and java code
  */
 public class AuthenticationRequestWrapper {
-    /**
-     * authentication request
-     */
-    private AuthenticationRequest auth;
+  /**
+   * authentication request
+   */
+  private AuthenticationRequest auth;
 
-    /**
-     * defalt constructor used for json parsing
-     */
-    public AuthenticationRequestWrapper() {
-    }
+  /**
+   * defalt constructor used for json parsing
+   */
+  public AuthenticationRequestWrapper() {
+  }
 
-    /**
-     *
-     * @param auth authentication requests
-     */
-    public AuthenticationRequestWrapper(AuthenticationRequest auth) {
-        this.auth = auth;
-    }
+  /**
+   * @param auth authentication requests
+   */
+  public AuthenticationRequestWrapper(AuthenticationRequest auth) {
+    this.auth = auth;
+  }
 
-    /**
-     *
-     * @return authentication request
-     */
-    public AuthenticationRequest getAuth() {
-        return auth;
-    }
+  /**
+   * @return authentication request
+   */
+  public AuthenticationRequest getAuth() {
+    return auth;
+  }
 
-    /**
-     *
-     * @param auth authentication request
-     */
-    public void setAuth(AuthenticationRequest auth) {
-        this.auth = auth;
-    }
+  /**
+   * @param auth authentication request
+   */
+  public void setAuth(AuthenticationRequest auth) {
+    this.auth = auth;
+  }
 }

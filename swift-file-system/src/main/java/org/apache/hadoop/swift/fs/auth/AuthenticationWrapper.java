@@ -6,24 +6,22 @@ package org.apache.hadoop.swift.fs.auth;
  */
 public class AuthenticationWrapper {
 
-    /**
-     * authentication response field
-     */
-    private AuthenticationResponse access;
+  /**
+   * authentication response field
+   */
+  private AuthenticationResponse access;
 
-    /**
-     *
-     * @return authentication response
-     */
-    public AuthenticationResponse getAccess() {
-        return access;
-    }
+  /**
+   * @return authentication response
+   */
+  public AuthenticationResponse getAccess() {
+    return access;
+  }
 
-    /**
-     *
-     * @param access sets authentication response
-     */
-    public void setAccess(AuthenticationResponse access) {
-        this.access = access;
-    }
+  /**
+   * @param access sets authentication response
+   */
+  public void setAccess(AuthenticationResponse access) {
+    this.access = access;
+  }
 }

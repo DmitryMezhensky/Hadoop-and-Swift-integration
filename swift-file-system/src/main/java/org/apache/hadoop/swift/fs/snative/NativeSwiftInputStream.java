@@ -12,99 +12,99 @@ import java.io.InputStream;
  */
 class NativeSwiftInputStream extends FSInputStream {
 
-    /**
-     * Default buffer size
-     */
-    private static final long BUFFER_SIZE = 1024 * 1024;
+  /**
+   * Default buffer size
+   */
+  private static final long BUFFER_SIZE = 1024 * 1024;
 
-    /**
-     * File store instance
-     */
-    private SwiftFileSystemStore store;
+  /**
+   * File store instance
+   */
+  private SwiftFileSystemStore store;
 
-    /**
-     * Hadoop statistics. Used to get info about number of reads, writes, etc.
-     */
-    private FileSystem.Statistics statistics;
+  /**
+   * Hadoop statistics. Used to get info about number of reads, writes, etc.
+   */
+  private FileSystem.Statistics statistics;
 
-    /**
-     * Data input stream
-     */
-    private InputStream in;
+  /**
+   * Data input stream
+   */
+  private InputStream in;
 
-    /**
-     * File path
-     */
-    private final Path path;
+  /**
+   * File path
+   */
+  private final Path path;
 
-    /**
-     * Current position
-     */
-    private long pos = 0;
+  /**
+   * Current position
+   */
+  private long pos = 0;
 
-    public NativeSwiftInputStream(SwiftFileSystemStore store, FileSystem.Statistics statistics, Path path) {
-        this.store = store;
-        this.statistics = statistics;
-        this.in = store.getObject(path, 0l, BUFFER_SIZE);
-        this.path = path;
+  public NativeSwiftInputStream(SwiftFileSystemStore store, FileSystem.Statistics statistics, Path path) {
+    this.store = store;
+    this.statistics = statistics;
+    this.in = store.getObject(path, 0l, BUFFER_SIZE);
+    this.path = path;
+  }
+
+  @Override
+  public synchronized int read() throws IOException {
+    int result;
+    try {
+      result = in.read();
+    } catch (IOException e) {
+      seek(pos);
+      result = in.read();
     }
-
-    @Override
-    public synchronized int read() throws IOException {
-        int result;
-        try {
-            result = in.read();
-        } catch (IOException e) {
-            seek(pos);
-            result = in.read();
-        }
-        if (result != -1) {
-            pos++;
-        }
-        if (statistics != null && result != -1) {
-            statistics.incrementBytesRead(1);
-        }
-        return result;
+    if (result != -1) {
+      pos++;
     }
-
-    @Override
-    public synchronized int read(byte[] b, int off, int len) throws IOException {
-        int result;
-        try {
-            result = in.read(b, off, len);
-        } catch (IOException e) {
-            seek(pos);
-            result = in.read(b, off, len);
-        }
-        if (result > 0) {
-            pos += result;
-        }
-        if (statistics != null && result > 0) {
-            statistics.incrementBytesRead(result);
-        }
-        return result;
+    if (statistics != null && result != -1) {
+      statistics.incrementBytesRead(1);
     }
+    return result;
+  }
 
-    @Override
-    public void close() throws IOException {
-        if (in != null)
-            in.close();
+  @Override
+  public synchronized int read(byte[] b, int off, int len) throws IOException {
+    int result;
+    try {
+      result = in.read(b, off, len);
+    } catch (IOException e) {
+      seek(pos);
+      result = in.read(b, off, len);
     }
+    if (result > 0) {
+      pos += result;
+    }
+    if (statistics != null && result > 0) {
+      statistics.incrementBytesRead(result);
+    }
+    return result;
+  }
 
-    @Override
-    public synchronized void seek(long pos) throws IOException {
-        in.close();
-        in = store.getObject(path, pos, BUFFER_SIZE);
-        this.pos = pos;
-    }
+  @Override
+  public void close() throws IOException {
+    if (in != null)
+      in.close();
+  }
 
-    @Override
-    public synchronized long getPos() throws IOException {
-        return pos;
-    }
+  @Override
+  public synchronized void seek(long pos) throws IOException {
+    in.close();
+    in = store.getObject(path, pos, BUFFER_SIZE);
+    this.pos = pos;
+  }
 
-    @Override
-    public boolean seekToNewSource(long targetPos) throws IOException {
-        return false;
-    }
+  @Override
+  public synchronized long getPos() throws IOException {
+    return pos;
+  }
+
+  @Override
+  public boolean seekToNewSource(long targetPos) throws IOException {
+    return false;
+  }
 }

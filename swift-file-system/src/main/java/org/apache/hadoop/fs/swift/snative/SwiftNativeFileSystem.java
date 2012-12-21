@@ -3,6 +3,7 @@ package org.apache.hadoop.fs.swift.snative;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
 import org.apache.hadoop.util.Progressable;
 
 import java.io.FileNotFoundException;
@@ -124,7 +125,21 @@ public class SwiftNativeFileSystem extends FileSystem {
    */
   @Override
   public BlockLocation[] getFileBlockLocations(FileStatus file, long start, long len) throws IOException {
-    final List<URI> locations = nativeStore.getObjectLocation(file.getPath());
+    // Check if requested file in Swift is more than 5Gb. In this case
+    // each block has its own locality.
+
+    final FileStatus[] listOfFileBlocks = nativeStore.listSubPaths(file.getPath());
+    List<URI> locations = new ArrayList<URI>();
+    if (listOfFileBlocks.length > 1) {
+      for (FileStatus fileStatus : listOfFileBlocks) {
+        if (SwiftObjectPath.fromPath(uri, fileStatus.getPath()).equals(SwiftObjectPath.fromPath(uri, file.getPath()))) {
+          continue;
+        }
+        locations.addAll(nativeStore.getObjectLocation(fileStatus.getPath()));
+      }
+    } else {
+      locations = nativeStore.getObjectLocation(file.getPath());
+    }
 
     final String[] names = new String[locations.size()];
     final String[] hosts = new String[locations.size()];
@@ -186,7 +201,6 @@ public class SwiftNativeFileSystem extends FileSystem {
    */
   @Override
   public FileStatus[] listStatus(Path f) throws IOException {
-
     return nativeStore.listSubPaths(f);
   }
 
@@ -238,7 +252,6 @@ public class SwiftNativeFileSystem extends FileSystem {
    */
   @Override
   public FSDataInputStream open(Path path, int bufferSize) throws IOException {
-
     return new FSDataInputStream(
             new BufferedFSInputStream(new SwiftNativeInputStream(nativeStore, statistics, path), bufferSize));
   }

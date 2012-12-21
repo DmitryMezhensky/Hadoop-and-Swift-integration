@@ -1,4 +1,4 @@
-package org.apache.hadoop.fs.swift.entities;
+package org.apache.hadoop.fs.swift.auth.entities;
 
 import java.util.List;
 

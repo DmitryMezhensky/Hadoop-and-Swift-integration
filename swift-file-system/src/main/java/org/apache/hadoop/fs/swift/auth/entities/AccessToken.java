@@ -1,6 +1,6 @@
-package org.apache.hadoop.fs.swift.auth;
+package org.apache.hadoop.fs.swift.auth.entities;
 
-import org.apache.hadoop.fs.swift.entities.Tenant;
+import org.apache.hadoop.fs.swift.auth.entities.Tenant;
 
 /**
  * Access token representation of Openstack Keystone authentication.

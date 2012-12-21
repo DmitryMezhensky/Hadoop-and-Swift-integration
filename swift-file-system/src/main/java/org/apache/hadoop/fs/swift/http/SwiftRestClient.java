@@ -6,10 +6,13 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.swift.auth.*;
-import org.apache.hadoop.fs.swift.entities.Catalog;
-import org.apache.hadoop.fs.swift.entities.Endpoint;
+import org.apache.hadoop.fs.swift.auth.entities.AccessToken;
+import org.apache.hadoop.fs.swift.auth.entities.Catalog;
+import org.apache.hadoop.fs.swift.auth.entities.Endpoint;
 import org.apache.hadoop.fs.swift.exceptions.SwiftConnectionException;
 import org.apache.hadoop.fs.swift.exceptions.SwiftException;
 import org.apache.hadoop.fs.swift.exceptions.SwiftIllegalDataLocalityRequest;
@@ -26,6 +29,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 public class SwiftRestClient {
+  private static final Log LOG = LogFactory.getLog(SwiftRestClient.class);
   private static final String HEADER_AUTH_KEY = "X-Auth-Token";
 
   public static final String SWIFT_AUTH_PROPERTY = "swift.auth.url";
@@ -251,7 +255,7 @@ public class SwiftRestClient {
       if (object.startsWith("/"))
         object = object.substring(1);
 
-      dataLocationURI = dataLocationURI.concat(path.getContainer().concat("?prefix=").concat(object));
+      dataLocationURI = dataLocationURI.concat("/").concat(path.getContainer().concat("/?prefix=").concat(object));
       uri = new URI(dataLocationURI);
     } catch (URISyntaxException e) {
       throw new RuntimeException(e);
@@ -373,6 +377,7 @@ public class SwiftRestClient {
    * @return authenticated access token
    */
   public AccessToken authenticate() throws SwiftException {
+    LOG.info("started authentication");
     return perform(authUri, new PostMethodProcessor<AccessToken>() {
       @Override
       public AccessToken extractResult(PostMethod method) throws IOException {
@@ -413,6 +418,7 @@ public class SwiftRestClient {
                     " for storing data in Swift. Try to create container " + endpointURI.getHost() + " manually ");
           }
         }
+        LOG.info("authenticated successfully");
 
         return token;
       }
@@ -564,19 +570,6 @@ public class SwiftRestClient {
     if (method.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
       authenticate();
       client.executeMethod(method);
-    }
-  }
-
-  /**
-   * Ensures the truth of an expression involving one or more parameters to the
-   * calling method.
-   *
-   * @param expression a boolean expression
-   * @throws IllegalArgumentException if {@code expression} is false
-   */
-  private static void checkArgument(boolean expression) {
-    if (!expression) {
-      throw new IllegalArgumentException();
     }
   }
 

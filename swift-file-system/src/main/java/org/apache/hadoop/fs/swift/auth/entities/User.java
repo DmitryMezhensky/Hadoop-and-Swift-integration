@@ -1,4 +1,4 @@
-package org.apache.hadoop.fs.swift.entities;
+package org.apache.hadoop.fs.swift.auth.entities;
 
 import org.apache.hadoop.fs.swift.auth.Roles;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Describes user entity in Keystone
+ * In different Swift installations User is represented differently.
+ * To avoid any JSON deserialization failures this entity is ignored
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class User {

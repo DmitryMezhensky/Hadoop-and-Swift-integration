@@ -52,7 +52,7 @@ public class TestJob extends Configured implements Tool {
         conf.set("mapred.max.split.size", String.valueOf(64 * 1024 * 1024));
 
         //Swift auth properties
-        conf.set("swift.auth.url", "http://172.18.66.117:5000/v2.0/tokens");
+        conf.set("swift.auth.url", "http://172.18.66.110:5000/v2.0/tokens");
         conf.set("swift.tenant", "superuser");
         conf.set("swift.username", "admin1");
         conf.set("swift.password", "password");

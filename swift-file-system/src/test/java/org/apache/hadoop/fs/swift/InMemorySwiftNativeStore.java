@@ -81,8 +81,7 @@ public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
 
   @Override
   public List<URI> getObjectLocation(Path path) throws IOException {
-    //TODO
-    return super.getObjectLocation(path);
+    throw new UnsupportedOperationException("not implemented for testing purposes");
   }
 
   @Override

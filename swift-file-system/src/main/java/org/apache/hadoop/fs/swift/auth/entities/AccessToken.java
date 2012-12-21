@@ -1,7 +1,5 @@
 package org.apache.hadoop.fs.swift.auth.entities;
 
-import org.apache.hadoop.fs.swift.auth.entities.Tenant;
-
 /**
  * Access token representation of Openstack Keystone authentication.
  * Class holds token id, tenant and expiration time.

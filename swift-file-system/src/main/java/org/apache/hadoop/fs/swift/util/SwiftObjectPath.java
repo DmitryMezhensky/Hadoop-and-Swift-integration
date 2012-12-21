@@ -2,6 +2,7 @@ package org.apache.hadoop.fs.swift.util;
 
 import org.apache.hadoop.fs.Path;
 
+import java.net.URI;
 import java.util.regex.Pattern;
 
 /**
@@ -10,18 +11,18 @@ import java.util.regex.Pattern;
 public class SwiftObjectPath {
   private static final Pattern PATH_PART_PATTERN = Pattern.compile(".*/AUTH_\\w*/");
 
-  //TODO: currently container name is hardcoded. Will be modified soon
   /**
    * Swift container
    */
-  private final String container = "/data";
+  private final String container;
 
   /**
    * swift object
    */
   private final String object;
 
-  public SwiftObjectPath(String object) {
+  public SwiftObjectPath(String container, String object) {
+    this.container = container;
     this.object = object;
   }
 
@@ -62,9 +63,9 @@ public class SwiftObjectPath {
     return toUriPath();
   }
 
-  public static SwiftObjectPath fromPath(Path path) {
+  public static SwiftObjectPath fromPath(URI uri, Path path) {
     final String url = path.toUri().getPath().replaceAll(PATH_PART_PATTERN.pattern(), "");
 
-    return new SwiftObjectPath(url);
+    return new SwiftObjectPath(uri.getHost(), url);
   }
 }

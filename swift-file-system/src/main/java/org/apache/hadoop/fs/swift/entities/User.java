@@ -1,7 +1,6 @@
 package org.apache.hadoop.fs.swift.entities;
 
 import org.apache.hadoop.fs.swift.auth.Roles;
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 import java.util.List;

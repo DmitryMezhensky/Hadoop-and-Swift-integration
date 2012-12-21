@@ -9,7 +9,6 @@ import org.apache.hadoop.fs.swift.http.SwiftRestClient;
 import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -41,13 +40,13 @@ public class SwiftNativeFileSystemStore {
 
   public void uploadFile(Path path, InputStream inputStream, long length) throws IOException {
     try {
-      swiftRestClient.upload(SwiftObjectPath.fromPath(path), inputStream, length);
+      swiftRestClient.upload(SwiftObjectPath.fromPath(uri, path), inputStream, length);
     } catch (SwiftException e) {
       throw new IOException(e);
     }
   }
 
-  public void uploadFilePart(Path path, int partNumber, File file) throws IOException {
+  public void uploadFilePart(Path path, int partNumber, InputStream inputStream, long length) throws IOException {
     String stringPath = path.toUri().toString();
     if (stringPath.endsWith("/")) {
       stringPath = stringPath.concat(String.valueOf(partNumber));
@@ -56,21 +55,21 @@ public class SwiftNativeFileSystemStore {
     }
 
     try {
-      swiftRestClient.uploadPart(new SwiftObjectPath(stringPath), file);
+      swiftRestClient.upload(new SwiftObjectPath(uri.getHost(), stringPath), inputStream, length);
     } catch (SwiftException e) {
       throw new IOException(e);
     }
   }
 
   public void createManifestForPartUpload(Path path) throws IOException {
-    String pathString = SwiftObjectPath.fromPath(path).toString();
+    String pathString = SwiftObjectPath.fromPath(uri, path).toString();
     if (!pathString.endsWith("/"))
       pathString = pathString.concat("/");
     if (pathString.startsWith("/"))
-      pathString = pathString.substring(6);
+      pathString = pathString.substring(1);
 
     try {
-      swiftRestClient.upload(SwiftObjectPath.fromPath(path), new ByteArrayInputStream(new byte[0]),
+      swiftRestClient.upload(SwiftObjectPath.fromPath(uri, path), new ByteArrayInputStream(new byte[0]),
               0, new Header("X-Object-Manifest", pathString));
     } catch (SwiftException e) {
       throw new IOException(e);
@@ -80,7 +79,7 @@ public class SwiftNativeFileSystemStore {
   public FileStatus getObjectMetadata(Path path) throws IOException {
     final Header[] headers;
     try {
-      headers = swiftRestClient.headRequest(SwiftObjectPath.fromPath(path));
+      headers = swiftRestClient.headRequest(SwiftObjectPath.fromPath(uri, path));
     } catch (SwiftException e) {
       throw new IOException(e);
     }
@@ -120,7 +119,7 @@ public class SwiftNativeFileSystemStore {
 
   public InputStream getObject(Path path) throws IOException {
     try {
-      return swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(path));
+      return swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, path));
     } catch (SwiftException e) {
       throw new IOException("Internal I/O error", e);
     }
@@ -128,7 +127,7 @@ public class SwiftNativeFileSystemStore {
 
   public InputStream getObject(Path path, long byteRangeStart, long length) throws IOException {
     try {
-      return swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(path), byteRangeStart, length);
+      return swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, path), byteRangeStart, length);
     } catch (SwiftException e) {
       throw new IOException("Internal I/O error", e);
     }
@@ -136,7 +135,7 @@ public class SwiftNativeFileSystemStore {
 
   public FileStatus[] listSubPaths(Path path) throws IOException {
     final Collection<FileStatus> fileStatuses;
-    fileStatuses = listDirectory(SwiftObjectPath.fromPath(path));
+    fileStatuses = listDirectory(SwiftObjectPath.fromPath(uri, path));
 
     return fileStatuses.toArray(new FileStatus[fileStatuses.size()]);
   }
@@ -144,7 +143,7 @@ public class SwiftNativeFileSystemStore {
   public void createDirectory(Path path) throws IOException {
 
     try {
-      swiftRestClient.putRequest(SwiftObjectPath.fromPath(path));
+      swiftRestClient.putRequest(SwiftObjectPath.fromPath(uri, path));
     } catch (SwiftException e) {
       throw new IOException(e);
     }
@@ -153,7 +152,7 @@ public class SwiftNativeFileSystemStore {
   public List<URI> getObjectLocation(Path path) throws IOException {
     final byte[] objectLocation;
     try {
-      objectLocation = swiftRestClient.getObjectLocation(SwiftObjectPath.fromPath(path));
+      objectLocation = swiftRestClient.getObjectLocation(SwiftObjectPath.fromPath(uri, path));
     } catch (SwiftException e) {
       throw new IOException(e);
     }
@@ -165,7 +164,7 @@ public class SwiftNativeFileSystemStore {
    */
   public void deleteObject(Path path) throws IOException {
 
-    swiftRestClient.delete(SwiftObjectPath.fromPath(path));
+    swiftRestClient.delete(SwiftObjectPath.fromPath(uri, path));
   }
 
   /**
@@ -176,7 +175,7 @@ public class SwiftNativeFileSystemStore {
    */
   public boolean objectExists(Path path) throws IOException {
     try {
-      return listDirectory(SwiftObjectPath.fromPath(path)).size() != 0;
+      return listDirectory(SwiftObjectPath.fromPath(uri, path)).size() != 0;
     } catch (IOException e) {
       throw new IOException(e);
     }
@@ -191,14 +190,14 @@ public class SwiftNativeFileSystemStore {
       }
 
       if (dstMetadata != null && dstMetadata.isDir()) {
-        return swiftRestClient.copyObject(SwiftObjectPath.fromPath(src),
-                SwiftObjectPath.fromPath(new Path(dst.getParent(), src.getName())));
+        return swiftRestClient.copyObject(SwiftObjectPath.fromPath(uri, src),
+                SwiftObjectPath.fromPath(uri, new Path(dst.getParent(), src.getName())));
       } else {
-        return swiftRestClient.copyObject(SwiftObjectPath.fromPath(src), SwiftObjectPath.fromPath(dst));
+        return swiftRestClient.copyObject(SwiftObjectPath.fromPath(uri, src), SwiftObjectPath.fromPath(uri, dst));
       }
     }
-    final List<FileStatus> fileStatuses = listDirectory(SwiftObjectPath.fromPath(src.getParent()));
-    final List<FileStatus> dstPath = listDirectory(SwiftObjectPath.fromPath(dst.getParent()));
+    final List<FileStatus> fileStatuses = listDirectory(SwiftObjectPath.fromPath(uri, src.getParent()));
+    final List<FileStatus> dstPath = listDirectory(SwiftObjectPath.fromPath(uri, dst.getParent()));
 
     if (dstPath.size() == 1 && !dstPath.get(0).isDir())
       throw new IOException("Destination path is file: " + dst.toString());
@@ -206,10 +205,10 @@ public class SwiftNativeFileSystemStore {
     boolean result = true;
     for (FileStatus fileStatus : fileStatuses) {
       if (!fileStatus.isDir()) {
-        result &= swiftRestClient.copyObject(SwiftObjectPath.fromPath(fileStatus.getPath()),
-                SwiftObjectPath.fromPath(dst));
+        result &= swiftRestClient.copyObject(SwiftObjectPath.fromPath(uri, fileStatus.getPath()),
+                SwiftObjectPath.fromPath(uri, dst));
 
-        swiftRestClient.delete(SwiftObjectPath.fromPath(fileStatus.getPath()));
+        swiftRestClient.delete(SwiftObjectPath.fromPath(uri, fileStatus.getPath()));
       }
     }
 

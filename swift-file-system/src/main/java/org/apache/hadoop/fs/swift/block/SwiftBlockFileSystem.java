@@ -317,7 +317,7 @@ public class SwiftBlockFileSystem extends FileSystem {
     long offset = 0l;
     for (Block block : iNode.getBlocks()) {
       final List<URI> locations =
-              store.getObjectLocation(new Path(new SwiftObjectPath(String.valueOf(block.getId())).toString()));
+              store.getObjectLocation(new Path(new SwiftObjectPath(uri.getHost(), String.valueOf(block.getId())).toString()));
       final String[] names = new String[locations.size()];
       final String[] hosts = new String[locations.size()];
       int i = 0;

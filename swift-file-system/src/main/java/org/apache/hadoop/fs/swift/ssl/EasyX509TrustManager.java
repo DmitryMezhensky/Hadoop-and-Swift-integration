@@ -49,7 +49,6 @@ import java.security.cert.X509Certificate;
  * you are perfectly aware of security implications of accepting
  * self-signed certificates
  * </p>
- *
  */
 
 public class EasyX509TrustManager implements X509TrustManager {

@@ -27,11 +27,13 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
 
   private Configuration conf;
   private SwiftRestClient swiftRestClient;
+  private URI uri;
 
   private int bufferSize;
 
   public void initialize(URI uri, Configuration conf) throws IOException {
     this.conf = conf;
+    this.uri = uri;
     this.swiftRestClient = SwiftRestClient.getInstance(conf);
     this.bufferSize = conf.getInt("io.file.buffer.size", DEFAULT_BUFFER_SIZE);
   }
@@ -42,7 +44,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
 
   private void delete(String key) throws IOException {
 
-    swiftRestClient.delete(SwiftObjectPath.fromPath(keyToPath(key)));
+    swiftRestClient.delete(SwiftObjectPath.fromPath(uri, keyToPath(key)));
   }
 
   public void deleteINode(Path path) throws IOException {
@@ -73,7 +75,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
 
   private InputStream get(String key) throws IOException {
     try {
-      final InputStream inputStream = swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(keyToPath(key)));
+      final InputStream inputStream = swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, keyToPath(key)));
       inputStream.available();
       return inputStream;
     } catch (NullPointerException e) {
@@ -83,7 +85,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
 
   private InputStream get(String key, long byteRangeStart, long length) throws IOException {
 
-    return swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(keyToPath(key)), byteRangeStart, length);
+    return swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, keyToPath(key)), byteRangeStart, length);
   }
 
   public INode retrieveINode(Path path) throws IOException {
@@ -129,11 +131,11 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   }
 
   public Set<Path> listSubPaths(Path path) throws IOException {
-    String uri = path.toString();
-    if (!uri.endsWith(Path.SEPARATOR))
-      uri += Path.SEPARATOR;
+    String uriString = path.toString();
+    if (!uriString.endsWith(Path.SEPARATOR))
+      uriString += Path.SEPARATOR;
 
-    final InputStream inputStream = swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(path));
+    final InputStream inputStream = swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, path));
     final ByteArrayOutputStream data = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024 * 1024]; // 1 mb
 
@@ -156,11 +158,11 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   }
 
   public Set<Path> listDeepSubPaths(Path path) throws IOException {
-    String uri = path.toString();
-    if (!uri.endsWith(Path.SEPARATOR))
-      uri += Path.SEPARATOR;
+    String uriString = path.toString();
+    if (!uriString.endsWith(Path.SEPARATOR))
+      uriString += Path.SEPARATOR;
 
-    final byte[] buffer = swiftRestClient.findObjectsByPrefix(SwiftObjectPath.fromPath(path));
+    final byte[] buffer = swiftRestClient.findObjectsByPrefix(SwiftObjectPath.fromPath(uri, path));
     final StringTokenizer tokenizer = new StringTokenizer(new String(buffer), "\n");
 
     final Set<Path> paths = new HashSet<Path>();
@@ -174,7 +176,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   private void put(String key, InputStream in, long length)
           throws IOException {
 
-    swiftRestClient.upload(SwiftObjectPath.fromPath(keyToPath(key)), in, length);
+    swiftRestClient.upload(SwiftObjectPath.fromPath(uri, keyToPath(key)), in, length);
   }
 
   public void storeINode(Path path, INode inode) throws IOException {
@@ -194,7 +196,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   public List<URI> getObjectLocation(Path path) throws IOException {
     final byte[] objectLocation;
     try {
-      objectLocation = swiftRestClient.getObjectLocation(SwiftObjectPath.fromPath(path));
+      objectLocation = swiftRestClient.getObjectLocation(SwiftObjectPath.fromPath(uri, path));
     } catch (SwiftException e) {
       throw new IOException(e);
     }
@@ -239,7 +241,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   public void purge() throws IOException {
     final Set<Path> paths = listSubPaths(new Path("/"));
     for (Path path : paths) {
-      swiftRestClient.delete(SwiftObjectPath.fromPath(path));
+      swiftRestClient.delete(SwiftObjectPath.fromPath(uri, path));
     }
 
   }

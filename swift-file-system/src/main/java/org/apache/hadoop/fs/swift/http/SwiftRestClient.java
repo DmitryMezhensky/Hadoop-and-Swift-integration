@@ -2,9 +2,6 @@ package org.apache.hadoop.fs.swift.http;
 
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.Protocol;
@@ -21,7 +18,9 @@ import org.apache.hadoop.fs.swift.util.JSONUtil;
 import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
 import org.jets3t.service.impl.rest.httpclient.HttpMethodReleaseInputStream;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -314,30 +313,6 @@ public class SwiftRestClient {
     });
   }
 
-  public void uploadPart(final SwiftObjectPath path, final File file, final Header... requestHeaders)
-          throws SwiftException {
-
-    perform(pathToURI(path, endpointURI.toString()), new PutMethodProcessor<byte[]>() {
-      @Override
-      public byte[] extractResult(PutMethod method) throws IOException {
-        return method.getResponseBody();
-      }
-
-      @Override
-      protected void setup(PutMethod method) {
-        final Part[] parts = new Part[1];
-        try {
-          parts[0] = new FilePart(path.toString(), file);
-        } catch (FileNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-
-        method.setRequestEntity(new MultipartRequestEntity(parts, method.getParams()));
-        setHeaders(method, requestHeaders);
-      }
-    });
-  }
-
   /**
    * Deletes object from swift
    *
@@ -405,7 +380,8 @@ public class SwiftRestClient {
                 JSONUtil.toObject(method.getResponseBodyAsString(), AuthenticationWrapper.class).getAccess();
         final List<Catalog> serviceCatalog = access.getServiceCatalog();
         for (Catalog catalog : serviceCatalog) {
-          if (catalog.getName().equals("swift") || catalog.getName().equals("cloudFiles")) {
+          if (catalog.getName().equals("swift") || catalog.getName().equals("cloudFiles")
+                  || catalog.getType().equals("object-store")) {
             for (Endpoint endpoint : catalog.getEndpoints()) {
               endpointURI = endpoint.getPublicURL();
               break;
@@ -427,6 +403,17 @@ public class SwiftRestClient {
           throw new RuntimeException("object endpoint URI is incorrect", e);
         }
         token = access.getToken();
+        //create default container if it doesn't exist for Hadoop Swift integration
+        final InputStream dataAsInputStream = getDataAsInputStream(new SwiftObjectPath(endpointURI.getHost(), ""));
+        if (dataAsInputStream == null) {
+          final int status = putRequest(new SwiftObjectPath(endpointURI.getHost(), ""));
+          if (status != HttpStatus.SC_OK && status != HttpStatus.SC_CREATED &&
+                  status != HttpStatus.SC_ACCEPTED && status != HttpStatus.SC_NO_CONTENT) {
+            throw new SwiftException("Couldn't create container " + endpointURI.getHost() +
+                    " for storing data in Swift. Try to create container " + endpointURI.getHost() + " manually ");
+          }
+        }
+
         return token;
       }
 

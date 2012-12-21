@@ -80,7 +80,6 @@ import java.net.*;
  *     client.executeMethod(httpget);
  *     </pre>
  * </p>
- *
  */
 
 public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory {

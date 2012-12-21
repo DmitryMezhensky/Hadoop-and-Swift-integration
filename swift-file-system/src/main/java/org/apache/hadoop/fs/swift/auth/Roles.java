@@ -20,6 +20,16 @@ public class Roles {
   private String description;
 
   /**
+   * Service id used in HP public Cloud
+   */
+  private String serviceId;
+
+  /**
+   * Service id used in HP public Cloud
+   */
+  private String tenantId;
+
+  /**
    * @return role name
    */
   public String getName() {
@@ -47,5 +57,21 @@ public class Roles {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  public String getServiceId() {
+    return serviceId;
+  }
+
+  public void setServiceId(String serviceId) {
+    this.serviceId = serviceId;
+  }
+
+  public String getTenantId() {
+    return tenantId;
+  }
+
+  public void setTenantId(String tenantId) {
+    this.tenantId = tenantId;
   }
 }

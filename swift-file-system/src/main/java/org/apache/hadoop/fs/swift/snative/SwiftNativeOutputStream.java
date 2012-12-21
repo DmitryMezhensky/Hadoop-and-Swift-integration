@@ -10,7 +10,7 @@ import java.io.*;
  * Writes to Swift on close() method
  */
 class SwiftNativeOutputStream extends OutputStream {
-  private static final long FILE_PART_SIZE = 5368709120l; // 5Gb max file size limit in Swift
+  private static final long FILE_PART_SIZE = 4768709000l; // files greater than 4.5Gb are divided into parts
 
   private Configuration conf;
   private String key;
@@ -63,8 +63,7 @@ class SwiftNativeOutputStream extends OutputStream {
         nativeStore.uploadFile(new Path(key), new FileInputStream(backupFile), backupFile.length());
       }
     } finally {
-      if (!backupFile.delete()) {
-      }
+      backupFile.delete();
       super.close();
       closed = true;
     }
@@ -88,8 +87,9 @@ class SwiftNativeOutputStream extends OutputStream {
 
   private void partUpload() throws IOException {
     partUpload = true;
-    nativeStore.uploadFilePart(new Path(key), partNumber, backupFile);
+    nativeStore.uploadFilePart(new Path(key), partNumber, new FileInputStream(backupFile), backupFile.length());
     backupFile = newBackupFile();
+    backupStream = new BufferedOutputStream(new FileOutputStream(backupFile));
     blockSize = 0;
     partNumber++;
   }

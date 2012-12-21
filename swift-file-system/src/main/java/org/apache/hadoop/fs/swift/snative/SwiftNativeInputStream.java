@@ -13,14 +13,14 @@ import java.io.InputStream;
 class SwiftNativeInputStream extends FSInputStream {
 
   /**
-   * Default buffer size
+   * Default buffer size 64mb
    */
-  private static final long BUFFER_SIZE = 32 * 1024 * 1024;
+  private static final long BUFFER_SIZE = 64 * 1024 * 1024;
 
   /**
-   * File storeNative instance
+   * File nativeStore instance
    */
-  private SwiftNativeFileSystemStore storeNative;
+  private SwiftNativeFileSystemStore nativeStore;
 
   /**
    * Hadoop statistics. Used to get info about number of reads, writes, etc.
@@ -44,9 +44,9 @@ class SwiftNativeInputStream extends FSInputStream {
 
   public SwiftNativeInputStream(SwiftNativeFileSystemStore storeNative, FileSystem.Statistics statistics, Path path)
           throws IOException {
-    this.storeNative = storeNative;
+    this.nativeStore = storeNative;
     this.statistics = statistics;
-    this.in = storeNative.getObject(path, 0l, BUFFER_SIZE);
+    this.in = storeNative.getObject(path);
     this.path = path;
   }
 
@@ -71,18 +71,14 @@ class SwiftNativeInputStream extends FSInputStream {
   @Override
   public synchronized int read(byte[] b, int off, int len) throws IOException {
     int result;
-    try {
-      result = in.read(b, off, len);
-    } catch (IOException e) {
-      seek(pos);
-      result = in.read(b, off, len);
-    }
+    result = in.read(b, off, len);
     if (result > 0) {
       pos += result;
     }
     if (statistics != null && result > 0) {
       statistics.incrementBytesRead(result);
     }
+
     return result;
   }
 
@@ -95,7 +91,7 @@ class SwiftNativeInputStream extends FSInputStream {
   @Override
   public synchronized void seek(long pos) throws IOException {
     in.close();
-    in = storeNative.getObject(path, pos, BUFFER_SIZE);
+    in = nativeStore.getObject(path, pos, pos + BUFFER_SIZE);
     this.pos = pos;
   }
 

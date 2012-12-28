@@ -38,6 +38,7 @@ public class SwiftRestClient {
   public static final String SWIFT_PASSWORD_PROPERTY = "swift.password";
   public static final String SWIFT_HTTP_PROTOCOL = "swift.http.port";
   public static final String SWIFT_HTTPS_PROTOCOL = "swift.https.port";
+  public static final String SWIFT_REGION_PROPERTY = "swift.region";
 
   /**
    * authentication endpoint
@@ -53,6 +54,12 @@ public class SwiftRestClient {
    * object location endpoint
    */
   private URI objectLocationURI;
+
+  /**
+   * Swift region. Some OpenStack installations has more than one region.
+   * In this case user can specify region with which Hadoop will be working
+   */
+  private final String region;
 
   /**
    * tenant name
@@ -152,6 +159,7 @@ public class SwiftRestClient {
       this.tenant = configuration.get(SWIFT_TENANT_PROPERTY);
       this.username = configuration.get(SWIFT_USERNAME_PROPERTY);
       this.password = configuration.get(SWIFT_PASSWORD_PROPERTY);
+      this.region = configuration.get(SWIFT_REGION_PROPERTY);
 
       if (stringAuthUri == null)
         throw new IllegalArgumentException("Property swift.auth.url is not set");
@@ -388,13 +396,18 @@ public class SwiftRestClient {
           if (catalog.getName().equals("swift") || catalog.getName().equals("cloudFiles")
                   || catalog.getType().equals("object-store")) {
             for (Endpoint endpoint : catalog.getEndpoints()) {
-              endpointURI = endpoint.getPublicURL();
-              break;
+              if (region != null && !endpoint.getRegion().equals(region)) {
+                continue;
+              } else {
+                endpointURI = endpoint.getPublicURL();
+                break;
+              }
             }
           }
         }
         if (endpointURI == null)
-          throw new SwiftException("SwiftRestClient not found swift endpoint");
+          throw new SwiftException("SwiftRestClient not found swift endpoint".
+                  concat(region == null ? "" : " with specified region: " + region));
 
         try {
           objectLocationURI = new URI(endpointURI.getScheme().
@@ -528,6 +541,9 @@ public class SwiftRestClient {
       return false;
     if (!configuration.get(SWIFT_PASSWORD_PROPERTY, "default-unset-property").
             equals(current.get(SWIFT_PASSWORD_PROPERTY, "default-unset-property")))
+      return false;
+    if (!configuration.get(SWIFT_REGION_PROPERTY, "default-unset-property").
+            equals(current.get(SWIFT_REGION_PROPERTY, "default-unset-property")))
       return false;
 
     return true;

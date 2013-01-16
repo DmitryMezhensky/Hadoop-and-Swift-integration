@@ -336,7 +336,7 @@ public class SwiftBlockFileSystem extends FileSystem {
   }
 
   @Override
-  public long getDefaultBlockSize() {
+  public long getDefaultBlockSize(Path f) {
     //64 mb
     return 64 * 1024 * 1024;
   }

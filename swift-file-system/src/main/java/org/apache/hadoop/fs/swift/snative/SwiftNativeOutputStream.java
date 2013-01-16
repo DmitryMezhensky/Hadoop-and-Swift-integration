@@ -1,5 +1,7 @@
 package org.apache.hadoop.fs.swift.snative;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
@@ -10,6 +12,7 @@ import java.io.*;
  * Writes to Swift on close() method
  */
 class SwiftNativeOutputStream extends OutputStream {
+  private static final Log LOG = LogFactory.getLog(SwiftNativeOutputStream.class);
   private static final long FILE_PART_SIZE = 4768709000l; // files greater than 4.5Gb are divided into parts
 
   private Configuration conf;
@@ -63,7 +66,9 @@ class SwiftNativeOutputStream extends OutputStream {
         nativeStore.uploadFile(new Path(key), new FileInputStream(backupFile), backupFile.length());
       }
     } finally {
-      backupFile.delete();
+      if (!backupFile.delete()) {
+        LOG.warn("couldn't delete " + backupFile + " file");
+      }
       super.close();
       closed = true;
     }
@@ -88,6 +93,10 @@ class SwiftNativeOutputStream extends OutputStream {
   private void partUpload() throws IOException {
     partUpload = true;
     nativeStore.uploadFilePart(new Path(key), partNumber, new FileInputStream(backupFile), backupFile.length());
+    backupStream.close();
+    if (!backupFile.delete()) {
+      LOG.warn("couldn't delete " + backupFile + " file");
+    }
     backupFile = newBackupFile();
     backupStream = new BufferedOutputStream(new FileOutputStream(backupFile));
     blockSize = 0;

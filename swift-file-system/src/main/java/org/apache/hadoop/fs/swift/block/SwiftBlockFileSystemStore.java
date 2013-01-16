@@ -110,8 +110,11 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     } catch (IOException e) {
       closeQuietly(out);
       out = null;
+      boolean closed;
       if (fileBlock != null) {
-        fileBlock.delete();
+        closed = fileBlock.delete();
+        if (!closed)
+          e.addSuppressed(new IOException("Couldn't delete  " + fileBlock + " file"));
       }
       throw e;
     } finally {
@@ -131,10 +134,6 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   }
 
   public Set<Path> listSubPaths(Path path) throws IOException {
-    String uriString = path.toString();
-    if (!uriString.endsWith(Path.SEPARATOR))
-      uriString += Path.SEPARATOR;
-
     final InputStream inputStream = swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, path));
     final ByteArrayOutputStream data = new ByteArrayOutputStream();
     byte[] buffer = new byte[1024 * 1024]; // 1 mb
@@ -158,10 +157,6 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   }
 
   public Set<Path> listDeepSubPaths(Path path) throws IOException {
-    String uriString = path.toString();
-    if (!uriString.endsWith(Path.SEPARATOR))
-      uriString += Path.SEPARATOR;
-
     final byte[] buffer = swiftRestClient.findObjectsByPrefix(SwiftObjectPath.fromPath(uri, path));
     final StringTokenizer tokenizer = new StringTokenizer(new String(buffer), "\n");
 

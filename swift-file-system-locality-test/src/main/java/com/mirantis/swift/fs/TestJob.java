@@ -6,10 +6,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -25,59 +25,86 @@ import java.net.UnknownHostException;
  *
  */
 public class TestJob extends Configured implements Tool {
-    public static class TestMapper extends Mapper<LongWritable, Text, NullWritable, Text> {
-        private static final InetAddress LOCAL;
+  public static class TestMapper extends Mapper<LongWritable, Text, Text, LongWritable> {
+    private static final InetAddress LOCAL;
 
-        static {
-            try {
-                LOCAL = InetAddress.getLocalHost();
-            } catch (UnknownHostException e) {
-                throw new IllegalStateException(e);
-            }
-        }
-
-        private static final Log LOGGER = LogFactory.getLog(TestMapper.class);
-
-        @Override
-        protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-            LOGGER.info(String.format("[%s/%s] Processing value: %s", LOCAL.getHostName(), LOCAL.getHostAddress(), value));
-            context.write(NullWritable.get(), value);
-        }
+    static {
+      try {
+        LOCAL = InetAddress.getLocalHost();
+      } catch (UnknownHostException e) {
+        throw new IllegalStateException(e);
+      }
     }
+
+    private static final Log LOGGER = LogFactory.getLog(TestMapper.class);
 
     @Override
-    public int run(String[] args) throws Exception {
-        final Configuration conf = getConf();
-        conf.set("mapred.min.split.size", String.valueOf(32 * 1024 * 1024));
-        conf.set("mapred.max.split.size", String.valueOf(64 * 1024 * 1024));
+    protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+      LOGGER.info(String.format("[%s/%s] Processing value: %s", LOCAL.getHostName(), LOCAL.getHostAddress(), value));
+      context.write(value, new LongWritable(1l));
+    }
+  }
 
-        //Swift auth properties
-        conf.set("swift.auth.url", "http://172.18.66.110:5000/v2.0/tokens");
-        conf.set("swift.tenant", "superuser");
-        conf.set("swift.username", "admin1");
-        conf.set("swift.password", "password");
-        conf.setInt("swift.http.port", 8080);
-        conf.setInt("swift.https.port", 443);
+  public static class TestReducer extends Reducer<Text, LongWritable, Text, LongWritable> {
 
-        final Job job = new Job(conf, "Test Job");
-        job.setJarByClass(TestJob.class);
+    @Override
+    protected void reduce(Text key, Iterable<LongWritable> values, Context context) throws IOException, InterruptedException {
+      long summ = 0;
+      for (LongWritable value : values) {
+        summ += value.get();
+      }
 
-        FileInputFormat.setInputPaths(job, args[0]);
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+      context.write(key, new LongWritable(summ));
+    }
+  }
 
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+  @Override
+  public int run(String[] args) throws Exception {
+    final Configuration conf = getConf();
+    conf.set("mapred.min.split.size", String.valueOf(32 * 1024 * 1024));
+    conf.set("mapred.max.split.size", String.valueOf(64 * 1024 * 1024));
 
-        job.setMapOutputKeyClass(NullWritable.class);
-        job.setMapOutputValueClass(Text.class);
+    if (args.length == 0)
+      throw new IllegalArgumentException("Please specify all params: -host swift-host -tenant swift-tenant" +
+              "-username login -pass password -input input-path -output output-path");
 
-        job.setMapperClass(TestMapper.class);
+    //Swift auth properties
+    conf.set("swift.auth.url", getParam(args, "host"));
+    conf.set("swift.tenant", getParam(args, "tenant"));
+    conf.set("swift.username", getParam(args, "username"));
+    conf.set("swift.password", getParam(args, "pass"));
+    conf.setInt("swift.http.port", 8080);
+    conf.setInt("swift.https.port", 443);
 
+    final Job job = new Job(conf, "Test Job");
+    job.setJarByClass(TestJob.class);
 
-        return job.waitForCompletion(true) ? 0 : 1;
+    FileInputFormat.setInputPaths(job, getParam(args, "input"));
+    FileOutputFormat.setOutputPath(job, new Path(getParam(args, "output")));
+
+    job.setInputFormatClass(TextInputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
+
+    job.setMapOutputKeyClass(Text.class);
+    job.setMapOutputValueClass(LongWritable.class);
+
+    job.setMapperClass(TestMapper.class);
+    job.setReducerClass(TestReducer.class);
+
+    return job.waitForCompletion(true) ? 0 : 1;
+  }
+
+  private String getParam(String[] source, String key) {
+    key = "-".concat(key);
+    for (int i = 0; i < source.length; i++) {
+      if (source[i].equals(key))
+        return source[i + 1];
     }
 
-    public static void main(String[] args) throws Exception {
-        ToolRunner.run(new Configuration(), new TestJob(), args);
-    }
+    throw new IllegalArgumentException("Specified key: " + key + " not found");
+  }
+
+  public static void main(String[] args) throws Exception {
+    ToolRunner.run(new Configuration(), new TestJob(), args);
+  }
 }

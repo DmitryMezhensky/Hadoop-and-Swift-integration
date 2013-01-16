@@ -1,5 +1,7 @@
 package org.apache.hadoop.fs.swift.block;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3.Block;
@@ -18,6 +20,8 @@ import java.util.Random;
  * Wraps OutputStream for streaming data into Swift
  */
 public class SwiftBlockOutputStream extends OutputStream {
+  private static final Log LOG = LogFactory.getLog(SwiftBlockOutputStream.class);
+
   /**
    * Hadoop configuration
    */
@@ -225,8 +229,11 @@ public class SwiftBlockOutputStream extends OutputStream {
 
     //
     // Delete local backup, start new one
-    //
-    backupFile.delete();
+    //we ignore cases when file is not deleted
+    if (!backupFile.delete()) {
+      LOG.warn("couldn't delete " + backupFile + " file");
+    }
+
     backupFile = newBackupFile();
     backupStream = new FileOutputStream(backupFile);
     bytesWrittenToBlock = 0;
@@ -269,8 +276,8 @@ public class SwiftBlockOutputStream extends OutputStream {
     }
 
     backupStream.close();
-    backupFile.delete();
-
+    //we ignore cases when file is not deleted
+    closed = backupFile.delete();
     super.close();
 
     closed = true;

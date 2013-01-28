@@ -494,7 +494,9 @@ public final class SwiftRestClient {
                      @Override
                      public byte[] extractResult(GetMethod method) throws
                                                                    IOException {
-                       if (method.getStatusCode() == SC_NOT_FOUND) {
+
+                       //TODO: remove SC_NO_CONTENT if it depends on Swift versions
+                       if (method.getStatusCode() == SC_NOT_FOUND || method.getStatusCode() == SC_NO_CONTENT) {
                          return null;
                        }
                        return method.getResponseBody();

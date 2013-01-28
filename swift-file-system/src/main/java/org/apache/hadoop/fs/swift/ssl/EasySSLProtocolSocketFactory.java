@@ -1,31 +1,19 @@
-/*
- * $HeadURL$
- * $Revision$
- * $Date$
- * 
- * ====================================================================
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *  Licensed to the Apache Software Foundation (ASF) under one or more
- *  contributor license agreements.  See the NOTICE file distributed with
- *  this work for additional information regarding copyright ownership.
- *  The ASF licenses this file to You under the Apache License, Version 2.0
- *  (the "License"); you may not use this file except in compliance with
- *  the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- * ====================================================================
- *
- * This software consists of voluntary contributions made by many
- * individuals on behalf of the Apache Software Foundation.  For more
- * information on the Apache Software Foundation, please see
- * <http://www.apache.org/>.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.hadoop.fs.swift.ssl;
@@ -45,11 +33,11 @@ import java.net.*;
 
 /**
  * <p>
- * EasySSLProtocolSocketFactory can be used to creats SSL {@link Socket}s
+ * EasySSLProtocolSocketFactory can be used to create SSL {@link Socket}s
  * that accept self-signed certificates.
  * </p>
  * <p>
- * This socket factory SHOULD NOT be used for productive systems
+ * This socket factory SHOULD NOT be used for production systems
  * due to security reasons, unless it is a concious decision and
  * you are perfectly aware of security implications of accepting
  * self-signed certificates
@@ -207,7 +195,7 @@ public class EasySSLProtocolSocketFactory implements SecureProtocolSocketFactory
   }
 
   public boolean equals(Object obj) {
-    return ((obj != null) && obj.getClass().equals(getClass()));
+    return ((obj != null) && obj.getClass().equals(EasySSLProtocolSocketFactory.class));
   }
 
   public int hashCode() {

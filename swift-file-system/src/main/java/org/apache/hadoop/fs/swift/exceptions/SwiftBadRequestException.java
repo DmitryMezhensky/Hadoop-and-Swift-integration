@@ -16,42 +16,16 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.fs.swift.auth;
+package org.apache.hadoop.fs.swift.exceptions;
 
 /**
- * This class is used for correct hierarchy mapping of
- * Keystone authentication model and java code
+ * Thrown to indicate that data locality can't be calculated or requested path is incorrect.
+ * Data locality can't be calculated if Openstack Swift version is old.
  */
-public class AuthenticationRequestWrapper {
-  /**
-   * authentication request
-   */
-  private AuthenticationRequest auth;
+public class SwiftBadRequestException extends SwiftException {
 
-  /**
-   * defalt constructor used for json parsing
-   */
-  public AuthenticationRequestWrapper() {
+  public SwiftBadRequestException(String message) {
+    super(message);
   }
 
-  /**
-   * @param auth authentication requests
-   */
-  public AuthenticationRequestWrapper(AuthenticationRequest auth) {
-    this.auth = auth;
-  }
-
-  /**
-   * @return authentication request
-   */
-  public AuthenticationRequest getAuth() {
-    return auth;
-  }
-
-  /**
-   * @param auth authentication request
-   */
-  public void setAuth(AuthenticationRequest auth) {
-    this.auth = auth;
-  }
 }

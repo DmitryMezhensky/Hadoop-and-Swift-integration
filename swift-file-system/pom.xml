@@ -3,21 +3,19 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.hadoop</groupId>
     <artifactId>hadoop-swift</artifactId>
-    <version>1.0</version>
+    <version>0.1-SNAPSHOT</version>
     <name>SwiftFileSystem</name>
     <url>http://maven.apache.org</url>
 
     <repositories>
-        <repository>
-            <id>woorea-releases</id>
-            <url>https://github.com/woorea/maven/raw/master/releases</url>
-        </repository>
+
     </repositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <commons.lang.version>2.6</commons.lang.version>
         <commons.io.version>2.3</commons.io.version>
+        <hadoop.version>3.0.0-SNAPSHOT</hadoop.version>
         <httpcomponents.version>4.2.1</httpcomponents.version>
         <jackson.version>1.9.7</jackson.version>
         <junit.version>4.10</junit.version>
@@ -46,16 +44,16 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>1.1.1</version>
+            <artifactId>hadoop-common</artifactId>
+            <version>${hadoop.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-test</artifactId>
-            <version>1.1.1</version>
+         <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop.version}</version>
+          <scope>test</scope>
+        <type>test-jar</type>
         </dependency>
-
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
@@ -98,7 +96,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.10</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

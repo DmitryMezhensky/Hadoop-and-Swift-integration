@@ -1,5 +1,24 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.fs.swift.block;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.s3.Block;
@@ -10,8 +29,19 @@ import org.apache.hadoop.fs.swift.http.SwiftRestClient;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystemStore;
 import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +54,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   private static final String FILE_SYSTEM_VERSION_VALUE = "1";
   private static final int DEFAULT_BUFFER_SIZE = 67108864;    //64 mb
   private static final String BLOCK_PREFIX = "block_";
+  public static final String IO_FILE_BUFFER_SIZE = "io.file.buffer.size";
 
   private Configuration conf;
   private SwiftRestClient swiftRestClient;
@@ -34,8 +65,8 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   public void initialize(URI uri, Configuration conf) throws IOException {
     this.conf = conf;
     this.uri = uri;
-    this.swiftRestClient = SwiftRestClient.getInstance(conf);
-    this.bufferSize = conf.getInt("io.file.buffer.size", DEFAULT_BUFFER_SIZE);
+    this.swiftRestClient = SwiftRestClient.getInstance(uri, conf);
+    this.bufferSize = conf.getInt(IO_FILE_BUFFER_SIZE, DEFAULT_BUFFER_SIZE);
   }
 
   public String getVersion() throws IOException {
@@ -73,16 +104,41 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     return true;
   }
 
+  /**
+   * Get the data at the end of the key -on any failure the input stream
+   * is closed.
+   * @param key object in the store
+   * @return a stream to get at the object -or null if not
+   * @throws IOException IO problem
+   */
   private InputStream get(String key) throws IOException {
+    InputStream inputStream = null;
     try {
-      final InputStream inputStream = swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, keyToPath(key)));
+      inputStream =
+        swiftRestClient.getDataAsInputStream(
+          SwiftObjectPath.fromPath(uri, keyToPath(key))
+          , SwiftRestClient.NEWEST);
       inputStream.available();
       return inputStream;
     } catch (NullPointerException e) {
+      IOUtils.closeQuietly(inputStream);
       return null;
+    } catch (IOException e) {
+      //cleanup
+      IOUtils.closeQuietly(inputStream);
+      //rethrow
+      throw e;
     }
   }
 
+  /**
+   * Get the input stream starting from a specific point.
+   * @param key object key
+   * @param byteRangeStart starting point
+   * @param length no. of bytes
+   * @return an input stream
+   * @throws IOException IO problems
+   */
   private InputStream get(String key, long byteRangeStart, long length) throws IOException {
 
     return swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, keyToPath(key)), byteRangeStart, length);
@@ -110,11 +166,8 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     } catch (IOException e) {
       closeQuietly(out);
       out = null;
-      boolean closed;
       if (fileBlock != null) {
-        closed = fileBlock.delete();
-        if (!closed)
-          e.addSuppressed(new IOException("Couldn't delete  " + fileBlock + " file"));
+        fileBlock.delete();
       }
       throw e;
     } finally {
@@ -134,30 +187,50 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   }
 
   public Set<Path> listSubPaths(Path path) throws IOException {
-    final InputStream inputStream = swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, path));
-    final ByteArrayOutputStream data = new ByteArrayOutputStream();
-    byte[] buffer = new byte[1024 * 1024]; // 1 mb
+    String uriString = path.toString();
+    if (!uriString.endsWith(Path.SEPARATOR)) {
+      uriString += Path.SEPARATOR;
+    }
 
+    InputStream inputStream = null;
     try {
+      inputStream =
+        swiftRestClient.getDataAsInputStream(
+          SwiftObjectPath.fromPath(uri, path),
+          SwiftRestClient.NEWEST);
+      final ByteArrayOutputStream data = new ByteArrayOutputStream();
+      byte[] buffer = new byte[1024 * 1024]; // 1 mb
+
       while (inputStream.read(buffer) > 0) {
         data.write(buffer);
       }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+
+      final StringTokenizer tokenizer = new StringTokenizer(new String(data.toByteArray()), "\n");
+
+      final Set<Path> paths = new HashSet<Path>();
+      while (tokenizer.hasMoreTokens()) {
+        paths.add(new Path(tokenizer.nextToken()));
+      }
+
+      return paths;
+    } finally {
+      IOUtils.closeQuietly(inputStream);
     }
-
-    final StringTokenizer tokenizer = new StringTokenizer(new String(data.toByteArray()), "\n");
-
-    final Set<Path> paths = new HashSet<Path>();
-    while (tokenizer.hasMoreTokens()) {
-      paths.add(new Path(tokenizer.nextToken()));
-    }
-
-    return paths;
   }
 
   public Set<Path> listDeepSubPaths(Path path) throws IOException {
-    final byte[] buffer = swiftRestClient.findObjectsByPrefix(SwiftObjectPath.fromPath(uri, path));
+    String uriString = path.toString();
+    if (!uriString.endsWith(Path.SEPARATOR)) {
+      uriString += Path.SEPARATOR;
+    }
+
+    final byte[] buffer;
+    try {
+      buffer =
+        swiftRestClient.findObjectsByPrefix(SwiftObjectPath.fromPath(uri, path));
+    } catch (FileNotFoundException e) {
+      return Collections.emptySet();
+    }
     final StringTokenizer tokenizer = new StringTokenizer(new String(buffer), "\n");
 
     final Set<Path> paths = new HashSet<Path>();

@@ -1,7 +1,5 @@
 package org.apache.hadoop.fs.swift.block;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.s3.Block;
@@ -17,8 +15,6 @@ import java.io.IOException;
  * Wrapper of InputStream for Block FS implementation
  */
 public class SwiftBlockInputStream extends FSInputStream {
-  private static final Log LOG = LogFactory.getLog(SwiftBlockInputStream.class);
-
   /**
    * FS store instance
    */
@@ -191,9 +187,7 @@ public class SwiftBlockInputStream extends FSInputStream {
       blockStream = null;
     }
     if (blockFile != null) {
-      if (!blockFile.delete()) {
-        LOG.warn("couldn't delete " + blockFile + " file");
-      }
+      blockFile.delete();
     }
     super.close();
     closed = true;

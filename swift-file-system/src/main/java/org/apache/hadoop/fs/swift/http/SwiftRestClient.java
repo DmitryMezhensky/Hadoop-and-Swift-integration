@@ -70,8 +70,10 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 /**
  * This implements the client-side of the Swift REST API
@@ -82,6 +84,8 @@ public final class SwiftRestClient {
   private static final Log LOG = LogFactory.getLog(SwiftRestClient.class);
   private static final int DEFAULT_RETRY_COUNT = 3;
   private static final int DEFAULT_CONNECT_TIMEOUT = 15000;
+
+  private static final Pattern urlEncodedPattern = Pattern.compile("\\s+");
 
   /**
    * Header that says "use newest version" -ensures that
@@ -1081,12 +1085,20 @@ public final class SwiftRestClient {
 
     String dataLocationURI = endpointURI.toString();
     try {
-      String uriPath = path.toUriPath();
-      dataLocationURI = SwiftUtils.joinPaths(dataLocationURI, uriPath);
+      String url = path.toUriPath();
+      if (url.matches(".*\\s+.*")) {
+        url = URLEncoder.encode(url, "UTF-8");
+        // URLEncoder despite it's incorrect name was not designed to
+        // encode URLs.Spaces are encoded as '+', but correct encoding is '%20'
+        url = url.replace("+", "%20");
+      }
+      dataLocationURI = SwiftUtils.joinPaths(dataLocationURI, url);
       return new URI(dataLocationURI);
     } catch (URISyntaxException e) {
       throw new SwiftException("Failed to create URI from " + dataLocationURI,
                                e);
+    } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException("failed to encode URI", e);
     }
   }
 

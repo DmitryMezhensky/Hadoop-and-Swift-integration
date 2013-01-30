@@ -1,13 +1,11 @@
-package org.apache.hadoop.fs.swift.integration.tests;
+package org.apache.hadoop.fs.swift.functional.tests;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.swift.snative.SwiftFileSystemForIntegrationTests;
+import org.apache.hadoop.fs.swift.snative.SwiftFileSystemForFunctionalTests;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,7 +30,7 @@ public class SwiftFileSystemTest {
   @Before
   public void initialization() throws URISyntaxException {
     this.conf = new Configuration();
-    this.conf.set("fs.swift.service.rackspace.auth.url", "https://identity.api.rackspacecloud.com/v2.0/tokens");
+    this.conf.set("fs.swift.service.rackspace.auth.url", "");
     this.conf.set("fs.swift.service.rackspace.tenant", "");
     this.conf.set("fs.swift.service.rackspace.username", "");
     this.conf.set("fs.swift.service.rackspace.password", "");
@@ -48,13 +46,13 @@ public class SwiftFileSystemTest {
    */
   @Test
   public void testFilePartUpload() throws IOException, URISyntaxException {
-    final SwiftFileSystemForIntegrationTests fileSystemForIntegrationTests =
-            new SwiftFileSystemForIntegrationTests();
-    fileSystemForIntegrationTests.initialize(uri, conf);
+    final SwiftFileSystemForFunctionalTests fs =
+            new SwiftFileSystemForFunctionalTests();
+    fs.initialize(uri, conf);
 
     final Path f = new Path("/home/huge/file/test/file");
     final FSDataOutputStream fsDataOutputStream =
-            fileSystemForIntegrationTests.create(f);
+            fs.create(f);
 
     final String originalString = createDataSize(2000);
     final String secondString = "bbb";
@@ -62,7 +60,7 @@ public class SwiftFileSystemTest {
     fsDataOutputStream.write(secondString.getBytes());
     fsDataOutputStream.close();
 
-    final FSDataInputStream open = fileSystemForIntegrationTests.open(f);
+    final FSDataInputStream open = fs.open(f);
 
     final StringBuilder readData = new StringBuilder();
     final byte[] buffer = new byte[1024];

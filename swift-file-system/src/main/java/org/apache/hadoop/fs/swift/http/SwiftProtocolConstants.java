@@ -39,7 +39,7 @@ public class SwiftProtocolConstants {
   public static final String SERVICE_CATALOG_CLOUD_FILES = "cloudFiles";
   public static final String SERVICE_CATALOG_OBJECT_STORE = "object-store";
   public static final String SWIFT_OBJECT_AUTH_ENDPOINT =
-    "/object_endpoint/AUTH_";
+    "/object_endpoint/";
   public static final String X_OBJECT_MANIFEST = "X-Object-Manifest";
   public static final String X_CONTAINER_OBJECT_COUNT =
     "X-Container-Object-Count";
@@ -87,6 +87,8 @@ public class SwiftProtocolConstants {
   public static final String DOT_HTTP_PORT = ".http.port";
   public static final String DOT_HTTPS_PORT = ".https.port";
   public static final String DOT_REGION = ".region";
+  public static final String DOT_PROXY_HOST = ".proxy.host";
+  public static final String DOT_PROXY_PORT = ".proxy.port";
   /**
    * flag to say use public URL
    */
@@ -105,4 +107,6 @@ public class SwiftProtocolConstants {
   public static final String SWIFT_REGION_PROPERTY = FS_SWIFT + DOT_REGION;
   public static final String SWIFT_PUBLIC_PROPERTY = FS_SWIFT + DOT_PUBLIC;
 
+  public static final String SWIFT_PROXY_HOST_PROPERTY = FS_SWIFT + DOT_PROXY_HOST;
+  public static final String SWIFT_PROXY_PORT_PROPERTY = FS_SWIFT + DOT_PROXY_PORT;
 }

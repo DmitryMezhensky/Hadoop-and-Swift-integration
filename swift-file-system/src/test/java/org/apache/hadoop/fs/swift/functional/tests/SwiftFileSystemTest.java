@@ -3,14 +3,14 @@ package org.apache.hadoop.fs.swift.functional.tests;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.snative.SwiftFileSystemForFunctionalTests;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutorService;
@@ -40,6 +40,7 @@ public class SwiftFileSystemTest {
 
     this.uri = new URI("swift://data.rackspace");
   }
+
 
   /**
    * tests functionality for big files ( > 5Gb) upload
@@ -126,7 +127,7 @@ public class SwiftFileSystemTest {
 
     final String message = "message";
     final Path filePath = new Path("/home/user/documents/file.txt");
-    final Path newFilePath = new Path("/home/user/files/file.txt");
+    final Path newFilePath = new Path("/home/user/documents/file2.txt");
 
     final FSDataOutputStream fsDataOutputStream = fileSystem.create(filePath);
     fsDataOutputStream.write(message.getBytes());

@@ -18,12 +18,8 @@
 
 package org.apache.hadoop.fs.swift.http;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.*;
+
 import static org.apache.commons.httpclient.HttpStatus.*;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -62,6 +58,7 @@ import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
 import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
 
 import org.apache.hadoop.fs.swift.util.SwiftUtils;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.jets3t.service.impl.rest.httpclient.HttpMethodReleaseInputStream;
 
 import java.io.FileNotFoundException;
@@ -139,6 +136,9 @@ public final class SwiftRestClient {
   private final boolean usePublicURL;
   private final int retryCount;
   private final int connectTimeout;
+
+  private String proxyHost;
+  private int proxyPort;
 
   /**
    * objects query endpoint. This is synchronized
@@ -339,6 +339,9 @@ public final class SwiftRestClient {
     connectTimeout = getIntOption(props, SWIFT_CONNECTION_TIMEOUT,
                                   DEFAULT_CONNECT_TIMEOUT);
 
+    proxyHost = props.getProperty(SWIFT_PROXY_HOST_PROPERTY, null);
+    proxyPort = getIntOption(props, SWIFT_PROXY_PORT_PROPERTY, 8080);
+
     if (LOG.isDebugEnabled()) {
       //everything you need for diagnostics. The password is omitted.
       LOG.debug(String.format(
@@ -493,17 +496,21 @@ public final class SwiftRestClient {
   public byte[] getObjectLocation(SwiftObjectPath path,
                                   final Header... requestHeaders) throws IOException {
     preRemoteCommand("getObjectLocation");
-    return perform(pathToURI(path),
+    return perform(pathToObjectLocation(path),
                    new GetMethodProcessor<byte[]>() {
                      @Override
                      public byte[] extractResult(GetMethod method) throws
                                                                    IOException {
 
                        //TODO: remove SC_NO_CONTENT if it depends on Swift versions
-                       if (method.getStatusCode() == SC_NOT_FOUND || method.getStatusCode() == SC_NO_CONTENT) {
+                       if (method.getStatusCode() == SC_NOT_FOUND || method.getStatusCode() == SC_NO_CONTENT ||
+                             method.getResponseBodyAsStream() == null) {
                          return null;
                        }
-                       return method.getResponseBody();
+                       final InputStream responseBodyAsStream = method.getResponseBodyAsStream();
+                       final byte[] locationData = new byte[1024];
+
+                       return responseBodyAsStream.read(locationData) > 0 ? locationData : null;
                      }
 
                      @Override
@@ -511,6 +518,23 @@ public final class SwiftRestClient {
                        setHeaders(method, requestHeaders);
                      }
                    });
+  }
+
+  private URI pathToObjectLocation(SwiftObjectPath path) {
+    URI uri;
+    String dataLocationURI = objectLocationURI.toString();
+    try {
+      if (path.toString().startsWith("/")) {
+        dataLocationURI = dataLocationURI.concat(path.toUriPath());
+      } else {
+        dataLocationURI = dataLocationURI.concat("/").concat(path.toUriPath());
+      }
+
+      uri = new URI(dataLocationURI);
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+    return uri;
   }
 
   /**
@@ -760,6 +784,7 @@ public final class SwiftRestClient {
         //these fields are all set together at the end of the operation
         URI endpointURI = null;
         URI objectLocation;
+        Endpoint swiftEndpoint = null;
         AccessToken accessToken;
 
         for (Catalog catalog : serviceCatalog) {
@@ -792,6 +817,7 @@ public final class SwiftRestClient {
               }
               if (region == null || endpointRegion.equals(region)) {
                 endpointURI = usePublicURL  ?publicURL: internalURL;
+                swiftEndpoint = endpoint;
                 break;
               }
             }
@@ -812,7 +838,7 @@ public final class SwiftRestClient {
 
         accessToken = access.getToken();
         String path = SWIFT_OBJECT_AUTH_ENDPOINT
-                      + accessToken.getTenant().getId();
+                      + swiftEndpoint.getTenantId();
         String host = endpointURI.getHost();
         try {
           objectLocation = new URI(endpointURI.getScheme(),
@@ -932,7 +958,7 @@ public final class SwiftRestClient {
 
 
     final M method = processor.createMethod(uri.toString());
-    
+
     //retry policy
     HttpMethodParams methodParams = method.getParams();
     methodParams.setParameter(HttpMethodParams.RETRY_HANDLER,
@@ -1138,6 +1164,10 @@ public final class SwiftRestClient {
    */
   private <M extends HttpMethod> int exec(M method) throws IOException {
     final HttpClient client = new HttpClient();
+    if (proxyHost != null) {
+      client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, new HttpHost(proxyHost, proxyPort));
+    }
+
     int statusCode = execWithDebugOutput(method, client);
     if (method.getStatusCode() == HttpStatus.SC_UNAUTHORIZED) {
       //unauthed -look at what raised the response

@@ -100,7 +100,7 @@ public class TestSwiftFileSystemExtendedContract {
   }
 
   protected Path path(String pathString) {
-    return new Path(pathString).makeQualified(fs);
+    return new Path(pathString).makeQualified(fs.getUri(), fs.getWorkingDirectory());
   }
 
   protected void createFile(Path path) throws IOException {
@@ -474,7 +474,7 @@ public class TestSwiftFileSystemExtendedContract {
     assertFalse("File claims to be a symlink " + fileInfo,
                 status.isSymlink());
     assertFalse("File claims to be a directory " + fileInfo,
-                status.isDirectory());
+                status.isDir());
   }
 
 }

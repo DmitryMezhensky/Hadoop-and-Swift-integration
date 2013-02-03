@@ -261,7 +261,7 @@ public class TestSwiftFileSystemBasicOps {
       writeTextFile(fs, path, text, false);
       FileStatus fileStatus = fs.getFileStatus(path);
       assertTrue("Not a file: " + fileStatus, fileStatus.isFile());
-      assertFalse("A dir: " + fileStatus, fileStatus.isDirectory());
+      assertFalse("A dir: " + fileStatus, fileStatus.isDir());
     } finally {
       delete(fs, path);
     }
@@ -345,7 +345,7 @@ public class TestSwiftFileSystemBasicOps {
     assertFalse("Should be a dir, but is a file: " + fileStatus,
                 fileStatus.isFile());
     assertTrue("Should be a dir -but isn't: " + fileStatus,
-               fileStatus.isDirectory());
+               fileStatus.isDir());
   }
 
 

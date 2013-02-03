@@ -16,7 +16,7 @@
         <commons.lang.version>2.6</commons.lang.version>
         <commons.io.version>2.3</commons.io.version>
         <hadoop.version>3.0.0-SNAPSHOT</hadoop.version>
-        <httpcomponents.version>4.2.1</httpcomponents.version>
+        <httpcomponents.version>4.2.3</httpcomponents.version>
         <jackson.version>1.9.7</jackson.version>
         <junit.version>4.10</junit.version>
         <mockito.version>1.9.0</mockito.version>

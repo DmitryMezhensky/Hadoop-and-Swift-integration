@@ -75,7 +75,8 @@ public class SwiftBlockFileSystem extends FileSystem {
     }
     store.initialize(uri, conf);
     this.uri = URI.create(String.format("bswift://%s:%d", uri.getHost(), uri.getPort()));
-    this.workingDir = new Path("/user", System.getProperty("user.name")).makeQualified(this);
+    this.workingDir = new Path("/user", System.getProperty("user.name")).
+            makeQualified(uri, new Path(System.getProperty("user.name")));
   }
 
   /**
@@ -140,12 +141,12 @@ public class SwiftBlockFileSystem extends FileSystem {
       return new FileStatus[]{};
     }
     if (inode.isFile()) {
-      return new FileStatus[]{getFileStatus(f.makeQualified(this), inode)
+      return new FileStatus[]{getFileStatus(f.makeQualified(uri, workingDir), inode)
       };
     }
     ArrayList<FileStatus> ret = new ArrayList<FileStatus>();
     for (Path p : store.listSubPaths(absolutePath)) {
-      ret.add(getFileStatus(p.makeQualified(this)));
+      ret.add(getFileStatus(p.makeQualified(uri, workingDir)));
     }
     return ret.toArray(new FileStatus[ret.size()]);
   }
@@ -354,7 +355,7 @@ public class SwiftBlockFileSystem extends FileSystem {
   }
 
   @Override
-  public long getDefaultBlockSize() {
+  public long getDefaultBlockSize(Path path) {
     //64 mb
     return 64 * 1024 * 1024;
   }

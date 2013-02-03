@@ -17,8 +17,11 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 
 /**
@@ -69,18 +72,20 @@ public class TestJob extends Configured implements Tool {
               "-username login -pass password -input input-path -output output-path");
 
     //Swift auth properties
-    conf.set("swift.auth.url", getParam(args, "host"));
-    conf.set("swift.tenant", getParam(args, "tenant"));
-    conf.set("swift.username", getParam(args, "username"));
-    conf.set("swift.password", getParam(args, "pass"));
-    conf.setInt("swift.http.port", 8080);
-    conf.setInt("swift.https.port", 443);
+    conf.set("fs.swift.service.rs.auth.url", getParam(args, "host"));
+    conf.set("fs.swift.service.rs.tenant", getParam(args, "tenant"));
+    conf.set("fs.swift.service.rs.username", getParam(args, "username"));
+    conf.set("fs.swift.service.rs.password", getParam(args, "pass"));
+    conf.set("fs.swift.service.rs.public", "true");
+    //conf.set("fs.swift.service.rs.region", "region-a.geo-1");
+    conf.setInt("fs.swift.service.rs.http.port", 8080);
+    conf.setInt("fs.swift.service.rs.https.port", 443);
+
+    conf.setBoolean("mapred.output.compress", false);
 
     final Job job = new Job(conf, "Test Job");
     job.setJarByClass(TestJob.class);
 
-    FileInputFormat.setInputPaths(job, getParam(args, "input"));
-    FileOutputFormat.setOutputPath(job, new Path(getParam(args, "output")));
 
     job.setInputFormatClass(TextInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);
@@ -90,6 +95,9 @@ public class TestJob extends Configured implements Tool {
 
     job.setMapperClass(TestMapper.class);
     job.setReducerClass(TestReducer.class);
+
+    FileInputFormat.setInputPaths(job, getParam(args, "input"));
+    FileOutputFormat.setOutputPath(job, new Path(getParam(args, "output")));
 
     return job.waitForCompletion(true) ? 0 : 1;
   }

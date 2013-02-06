@@ -29,23 +29,9 @@ import org.apache.hadoop.fs.swift.http.SwiftRestClient;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystemStore;
 import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Block store for Swift. Implements Hadoop S3 FileSystemStore interface.

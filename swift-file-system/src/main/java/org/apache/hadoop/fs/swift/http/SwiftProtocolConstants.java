@@ -34,6 +34,8 @@ public class SwiftProtocolConstants {
   public static final int SWIFT_HTTPS_PORT = 443;
   public static final String HEADER_RANGE = HttpHeaders.RANGE;
   public static final String HEADER_DESTINATION = HttpHeaders.DESTINATION;
+  public static final String HEADER_LAST_MODIFIED = "Last-Modified";
+  public static final String HEADER_CONTENT_LENGTH = "Content-Length";
   public static final String SWIFT_RANGE_HEADER_FORMAT_PATTERN = "bytes=%d-%d";
   public static final String SERVICE_CATALOG_SWIFT = "swift";
   public static final String SERVICE_CATALOG_CLOUD_FILES = "cloudFiles";

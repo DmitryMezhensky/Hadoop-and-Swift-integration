@@ -19,15 +19,7 @@
 package org.apache.hadoop.fs.swift.http;
 
 import org.apache.commons.httpclient.*;
-
-import static org.apache.commons.httpclient.HttpStatus.*;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.httpclient.protocol.DefaultProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.Protocol;
@@ -37,26 +29,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.swift.auth.AuthenticationRequest;
-import org.apache.hadoop.fs.swift.auth.AuthenticationRequestWrapper;
-import org.apache.hadoop.fs.swift.auth.AuthenticationResponse;
-import org.apache.hadoop.fs.swift.auth.AuthenticationWrapper;
-import org.apache.hadoop.fs.swift.auth.PasswordCredentials;
+import org.apache.hadoop.fs.swift.auth.*;
 import org.apache.hadoop.fs.swift.auth.entities.AccessToken;
 import org.apache.hadoop.fs.swift.auth.entities.Catalog;
 import org.apache.hadoop.fs.swift.auth.entities.Endpoint;
-import org.apache.hadoop.fs.swift.exceptions.SwiftBadRequestException;
-import org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException;
-import org.apache.hadoop.fs.swift.exceptions.SwiftConnectionException;
-import org.apache.hadoop.fs.swift.exceptions.SwiftException;
-import org.apache.hadoop.fs.swift.exceptions.SwiftInternalStateException;
-import org.apache.hadoop.fs.swift.exceptions.SwiftInvalidResponseException;
+import org.apache.hadoop.fs.swift.exceptions.*;
 import org.apache.hadoop.fs.swift.ssl.EasySSLProtocolSocketFactory;
 import org.apache.hadoop.fs.swift.util.JSONUtil;
 import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
-
-import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
-
 import org.apache.hadoop.fs.swift.util.SwiftUtils;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.jets3t.service.impl.rest.httpclient.HttpMethodReleaseInputStream;
@@ -71,6 +51,9 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
+
+import static org.apache.commons.httpclient.HttpStatus.*;
+import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
 
 /**
  * This implements the client-side of the Swift REST API
@@ -556,7 +539,7 @@ public final class SwiftRestClient {
       if (object.startsWith("/")) {
         object = object.substring(1);
       }
-
+      object = encodeUrl(object);
       dataLocationURI = dataLocationURI.concat("/")
                                        .concat(path.getContainer())
                                        .concat("/?prefix=")
@@ -583,6 +566,79 @@ public final class SwiftRestClient {
         return new int[] {
           SC_OK,
           SC_NOT_FOUND
+        };
+      }
+
+      @Override
+      protected void setup(GetMethod method) {
+        setHeaders(method, requestHeaders);
+      }
+    });
+  }
+
+  /**
+   * Find objects in a directory
+   *
+   * @param path path prefix
+   * @param requestHeaders optional request headers
+   * @return byte[] file data or null if the object was not found
+   * @throws IOException on IO Faults
+   * @throws FileNotFoundException if nothing is at the end of the URI -that is,
+   * the directory is empty
+   */
+  public byte[] listObjectsInDirectory(SwiftObjectPath path,
+                                       final Header... requestHeaders) throws IOException {
+    preRemoteCommand("listObjectsInPath");
+    URI uri;
+    String endpoint = getEndpointURI().toString();
+    StringBuilder dataLocationURI = new StringBuilder();
+    dataLocationURI.append(endpoint);
+    String object = path.getObject();
+    if (object.startsWith("/")) {
+      object = object.substring(1);
+    }
+    if (!object.endsWith("/")) {
+      object = object.concat("/");
+    }
+
+/* dataLocationURI = dataLocationURI.append("/")
+.append(path.getContainer())
+.append("/?path=")
+.append(object);*/
+    dataLocationURI = dataLocationURI.append("/")
+            .append(path.getContainer())
+            .append("/?prefix=")
+            .append(object)
+            .append("&delimiter=/")
+    ;
+    return findObjects(dataLocationURI.toString(), requestHeaders);
+  }
+
+  private byte[] findObjects(String location, final Header[] requestHeaders) throws
+          IOException {
+    URI uri;
+    preRemoteCommand("findObjects");
+    try {
+      uri = new URI(location);
+    } catch (URISyntaxException e) {
+      throw new SwiftException("Bad URI: " + location, e);
+    }
+
+    return perform(uri, new GetMethodProcessor<byte[]>() {
+      @Override
+      public byte[] extractResult(GetMethod method) throws IOException {
+        if (method.getStatusCode() == SC_NOT_FOUND) {
+          //no result
+          throw new FileNotFoundException("Not found " + method.getURI());
+        }
+        return method.getResponseBody();
+      }
+
+      @Override
+      protected int[] getAllowedStatusCodes() {
+        return new int[] {
+                SC_OK,
+                SC_NOT_FOUND
         };
       }
 
@@ -1111,21 +1167,25 @@ public final class SwiftRestClient {
 
     String dataLocationURI = endpointURI.toString();
     try {
-      String url = path.toUriPath();
-      if (url.matches(".*\\s+.*")) {
-        url = URLEncoder.encode(url, "UTF-8");
-        // URLEncoder despite it's incorrect name was not designed to
-        // encode URLs.Spaces are encoded as '+', but correct encoding is '%20'
-        url = url.replace("+", "%20");
-      }
-      dataLocationURI = SwiftUtils.joinPaths(dataLocationURI, url);
+
+      dataLocationURI = SwiftUtils.joinPaths(dataLocationURI, encodeUrl(path.toUriPath()));
       return new URI(dataLocationURI);
     } catch (URISyntaxException e) {
-      throw new SwiftException("Failed to create URI from " + dataLocationURI,
-                               e);
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("failed to encode URI", e);
+      throw new SwiftException("Failed to create URI from " + dataLocationURI, e);
     }
+  }
+
+  private static String encodeUrl(String url) {
+    if (url.matches(".*\\s+.*")) {
+      try {
+        url = URLEncoder.encode(url, "UTF-8");
+        url = url.replace("+", "%20");
+      } catch (UnsupportedEncodingException e) {
+        throw new RuntimeException("failed to encode URI", e);
+      }
+    }
+
+    return url;
   }
 
   /**

@@ -2,12 +2,13 @@ package org.apache.hadoop.fs.swift;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.swift.http.SwiftRestClient;
-import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
 
 /**
  *

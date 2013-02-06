@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.fs.swift.http;
 
-import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
-import static org.apache.hadoop.fs.swift.SwiftTestUtils.*;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException;
 import org.junit.Assert;
@@ -30,6 +27,9 @@ import org.junit.Test;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
+
+import static org.apache.hadoop.fs.swift.SwiftTestUtils.assertPropertyEquals;
+import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
 
 public class TestRestClientBindings extends Assert {
 

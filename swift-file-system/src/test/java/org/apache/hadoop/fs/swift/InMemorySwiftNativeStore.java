@@ -8,11 +8,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystemStore;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.List;
 import java.util.SortedMap;
@@ -20,9 +16,8 @@ import java.util.TreeMap;
 
 /**
  * In-memory Swift emulator for tests.
- *
+ * <p/>
  * This is very unrealistic, and so the functional tests should be preferred.
- *
  */
 public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
   private static final Log LOG = LogFactory.getLog(InMemorySwiftNativeStore.class);
@@ -52,8 +47,8 @@ public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
       IOUtils.closeQuietly(inputStream);
     }
     metadataMap.put(path.toUri().toString(),
-                    new FileStatus(size, false, 0, 0, System.currentTimeMillis(),
-                                   path));
+            new FileStatus(size, false, 0, 0, System.currentTimeMillis(),
+                    path));
     dataMap.put(path.toUri().toString(), out.toByteArray());
   }
 
@@ -73,7 +68,7 @@ public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
 
   @Override
   public InputStream getObject(Path path, long byteRangeStart, long length) throws
-                                                                            IOException {
+          IOException {
     byte[] data = dataMap.get(path.toUri().toString());
     if (data == null) {
       throw new FileNotFoundException("Not found" + path.toUri());
@@ -82,15 +77,10 @@ public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
   }
 
   @Override
-  public FileStatus[] listSubPaths(Path path) throws IOException {
-    throw new UnsupportedOperationException("not implemented for testing purposes");
-  }
-
-  @Override
   public void createDirectory(Path path) {
     metadataMap.put(path.toUri().toString(),
-                    new FileStatus(0, false, 0, 0, System.currentTimeMillis(),
-                                   path));
+            new FileStatus(0, false, 0, 0, System.currentTimeMillis(),
+                    path));
   }
 
   @Override
@@ -100,7 +90,7 @@ public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
 
   @Override
   public boolean deleteObject(Path path) throws IOException {
-    boolean found = null!= metadataMap.remove(path.toUri().toString());
+    boolean found = null != metadataMap.remove(path.toUri().toString());
     dataMap.remove(path.toUri().toString());
     return found;
   }

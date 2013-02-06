@@ -185,7 +185,7 @@ public class SwiftNativeFileSystem extends FileSystem {
     // each block has its own location -which may be determinable
     // from the Swift client API, depending on the remote server
 
-    final FileStatus[] listOfFileBlocks = store.listSubPaths(file.getPath());
+    final FileStatus[] listOfFileBlocks = store.listSubPaths(file.getPath(), false, true);
     List<URI> locations = new ArrayList<URI>();
     if (listOfFileBlocks.length > 1) {
       for (FileStatus fileStatus : listOfFileBlocks) {
@@ -287,7 +287,7 @@ public class SwiftNativeFileSystem extends FileSystem {
     if (LOG.isDebugEnabled()) {
       LOG.debug("SwiftFileSystem.listStatus for: " + f);
     }
-    return store.listSubPaths(f);
+    return store.listSubPaths(f, false, false);
   }
 
   /**

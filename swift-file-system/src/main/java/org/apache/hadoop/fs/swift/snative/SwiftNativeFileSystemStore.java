@@ -14,7 +14,6 @@ import org.apache.hadoop.fs.swift.http.SwiftProtocolConstants;
 import org.apache.hadoop.fs.swift.http.SwiftRestClient;
 import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
 import org.apache.hadoop.fs.swift.util.SwiftUtils;
-import org.apache.http.HttpHeaders;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -43,8 +42,8 @@ public class SwiftNativeFileSystemStore {
   /**
    * Initalize the filesystem store -this creates the REST client binding.
    *
-   * @param fsURI         URI of the filesystem, which is used to map to the filesystem-specific
-   *                      options in the configuration file
+   * @param fsURI URI of the filesystem, which is used to map to the filesystem-specific
+   * options in the configuration file
    * @param configuration configuration
    * @throws IOException on any failure.
    */
@@ -62,9 +61,9 @@ public class SwiftNativeFileSystemStore {
   /**
    * Upload a file
    *
-   * @param path        destination path in the swift filesystem
+   * @param path destination path in the swift filesystem
    * @param inputStream input data
-   * @param length      length of the data
+   * @param length length of the data
    * @throws IOException on a problem
    */
   public void uploadFile(Path path, InputStream inputStream, long length) throws IOException {
@@ -74,10 +73,10 @@ public class SwiftNativeFileSystemStore {
   /**
    * Upload part of a larger file.
    *
-   * @param path        destination path
-   * @param partNumber  item number in the path
+   * @param path destination path
+   * @param partNumber item number in the path
    * @param inputStream input data
-   * @param length      length of the data
+   * @param length length of the data
    * @throws IOException on a problem
    */
   public void uploadFilePart(Path path, int partNumber, InputStream inputStream, long length) throws IOException {
@@ -118,12 +117,13 @@ public class SwiftNativeFileSystemStore {
    *
    * @param path path
    * @return file metadata. -or null if no headers were received back from the server.
-   * @throws IOException           on a problem
+   * @throws IOException on a problem
    * @throws FileNotFoundException if there is nothing at the end
    */
   public FileStatus getObjectMetadata(Path path) throws IOException {
+    SwiftObjectPath objectPath = toObjectPath(path);
     final Header[] headers;
-    headers = swiftRestClient.headRequest(toObjectPath(path),
+    headers = swiftRestClient.headRequest(objectPath,
             SwiftRestClient.NEWEST);
     //no headers is treated as a missing file
     if (headers.length == 0) {
@@ -140,10 +140,10 @@ public class SwiftNativeFileSystemStore {
         length = 0;
         isDir = true;
       }
-      if (HttpHeaders.CONTENT_LENGTH.equals(headerName)) {
+      if (SwiftProtocolConstants.HEADER_CONTENT_LENGTH.equals(headerName)) {
         length = Long.parseLong(header.getValue());
       }
-      if (HttpHeaders.LAST_MODIFIED.equals(headerName)) {
+      if (SwiftProtocolConstants.HEADER_LAST_MODIFIED.equals(headerName)) {
         final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(PATTERN);
         try {
           lastModified = simpleDateFormat.parse(header.getValue()).getTime();
@@ -153,12 +153,7 @@ public class SwiftNativeFileSystemStore {
       }
     }
 
-    final Path correctSwiftPath;
-    try {
-      correctSwiftPath = getCorrectSwiftPath(path);
-    } catch (URISyntaxException e) {
-      throw new SwiftException("Specified path " + path + " is incorrect", e);
-    }
+    Path correctSwiftPath = getCorrectSwiftPath(path);
     return new FileStatus(length, isDir, 0, 0L, lastModified, correctSwiftPath);
   }
 
@@ -168,7 +163,7 @@ public class SwiftNativeFileSystemStore {
    *
    * @param path object path
    * @return the input stream -this must be closed to terminate the connection
-   * @throws IOException           IO problems
+   * @throws IOException IO problems
    * @throws FileNotFoundException path doesn't resolve to an object
    */
   public InputStream getObject(Path path) throws IOException {
@@ -179,9 +174,9 @@ public class SwiftNativeFileSystemStore {
   /**
    * Get the input stream starting from a specific point.
    *
-   * @param path           path to object
+   * @param path path to object
    * @param byteRangeStart starting point
-   * @param length         no. of bytes
+   * @param length no. of bytes
    * @return an input stream that must be closed
    * @throws IOException IO problems
    */
@@ -191,11 +186,40 @@ public class SwiftNativeFileSystemStore {
             toObjectPath(path), byteRangeStart, length);
   }
 
-  public FileStatus[] listSubPaths(Path path) throws IOException {
+  /**
+   * List all elements in this directory
+   *
+   * @param path path to work with
+   * @param nameOnly should the status be minimal and not make any calls
+   * to the system to determine attributes beyond the name?
+   * @return the file statuses, or an empty array if there are no children
+   * @throws IOException on IO problems
+   * @throws FileNotFoundException if the path is nonexistent
+   */
+  public FileStatus[] listSubPaths(Path path,
+                                   boolean recursive,
+                                   boolean nameOnly) throws IOException {
     final Collection<FileStatus> fileStatuses;
-    fileStatuses = listDirectory(toDirPath(path));
+    fileStatuses = listDirectory(toDirPath(path), recursive, nameOnly);
     return fileStatuses.toArray(new FileStatus[fileStatuses.size()]);
   }
+  /**
+   * List all elements in this directory
+   *
+   *
+   * @param path path to work with
+   * @param nameOnly should the status be minimal and not make any calls
+   * to the system to determine attributes beyond the name?
+   * @return the file statuses, or an empty list if there are no children
+   * @throws IOException on IO problems
+   * @throws FileNotFoundException if the path is nonexistent
+   */
+  public List<FileStatus> listDirectory(Path path,
+                                        boolean recursive,
+                                        boolean nameOnly) throws IOException {
+    return listDirectory(toDirPath(path), recursive, nameOnly);
+  }
+
 
   /**
    * Create a directory
@@ -250,12 +274,26 @@ public class SwiftNativeFileSystemStore {
    *
    * @param path object path
    * @return true if the metadata of an object could be retrieved
-   * @throws IOException IO problems
+   * @throws IOException IO problems other than FileNotFound, which
+   * is downgraded to an object does not exist return code
    */
   public boolean objectExists(Path path) throws IOException {
+    return objectExists(toObjectPath(path));
+  }
+  /**
+   * Does the object exist
+   *
+   * @param path swift object path
+   * @return true if the metadata of an object could be retrieved
+   * @throws IOException IO problems other than FileNotFound, which
+   * is downgraded to an object does not exist return code
+   */
+  public boolean objectExists(SwiftObjectPath path) throws IOException {
     try {
-      getObjectMetadata(path);
-      return true;
+      Header[] headers = swiftRestClient.headRequest(path,
+              SwiftRestClient.NEWEST);
+      //no headers is treated as a missing file
+      return headers.length != 0;
     } catch (FileNotFoundException e) {
       return false;
     }
@@ -295,7 +333,6 @@ public class SwiftNativeFileSystemStore {
       return false;
     }
 
-
     final FileStatus srcMetadata;
     try {
       srcMetadata = getObjectMetadata(src);
@@ -312,16 +349,20 @@ public class SwiftNativeFileSystemStore {
       dstMetadata = null;
     }
 
-    //check to see if the parent exists
-    Path destParent = dst.getParent();
-    try {
-      FileStatus destParentStat = destParent != null
-              ? getObjectMetadata(destParent)
-              : null;
-    } catch (FileNotFoundException e) {
-      //destination parent doesn't exist; bail out
-      LOG.debug("destination parent directory " + destParent + " doesn't exist");
-      return false;
+    //check to see if the destination parent directory exists
+    Path srcParent = src.getParent();
+    Path dstParent = dst.getParent();
+    //skip the overhead of a HEAD call if the src and dest share the same
+    //parent dir (in which case the dest dir exists), or the destination
+    //directory is root, in which case it must also exist
+    if (dstParent !=null && !dstParent.equals(srcParent)) {
+      try {
+        getObjectMetadata(dstParent);
+      } catch (FileNotFoundException e) {
+        //destination parent doesn't exist; bail out
+        LOG.debug("destination parent directory "+ dstParent + " doesn't exist");
+        return false;
+      }
     }
 
     boolean destExists = dstMetadata != null;
@@ -331,14 +372,13 @@ public class SwiftNativeFileSystemStore {
 
 
     boolean srcIsFile = !SwiftUtils.isDirectory(srcMetadata);
-    if (!srcIsFile) {
+    if (srcIsFile) {
 
       //source is a simple file
       // outcomes:
-      // #1  dest exists and is file: fail
+      // #1 dest exists and is file: fail
       // #2 dest exists and is dir: destination path becomes under dest dir
       // #3 dest does not exist: use dest as name
-
       if (destExists) {
 
         if (destIsDir) {
@@ -354,15 +394,15 @@ public class SwiftNativeFileSystemStore {
         destPath = toObjectPath(dst);
       }
 
-
-      boolean copySucceeded = swiftRestClient.copyObject(srcObject, destPath);
-      if (copySucceeded) {
-        //if the copy worked delete the original
+      boolean success = swiftRestClient.
+              copyObject(srcObject, destPath);
+      if (success) {
         swiftRestClient.delete(srcObject);
+      } else {
+        throw new SwiftException("Copy of " + srcObject + " to "
+                + destPath + "failed");
       }
-      return copySucceeded;
-
-
+      return true;
     } else {
 
       //here the source exists and is a directory
@@ -387,50 +427,71 @@ public class SwiftNativeFileSystemStore {
       }
       SwiftObjectPath targetObjectPath = toObjectPath(targetPath);
 
-      //enum the child entries
-      List<FileStatus> fileStatuses = listDirectory(toObjectPath(src.getParent()));
+      //enum the child entries amd everything underneath
+      List<FileStatus> fileStatuses = listDirectory(toObjectPath(src), true, false);
 
       boolean result = true;
 
       //iterative copy of everything under the directory
       for (FileStatus fileStatus : fileStatuses) {
-        if (!fileStatus.isDir()) {
-          boolean copied =
-                  swiftRestClient.copyObject(toObjectPath(fileStatus.getPath()),
-                          targetObjectPath);
-          result &= copied;
-
-          //if client couldn't copy, data will be lost
-          if (copied) {
-            swiftRestClient.delete(toObjectPath(fileStatus.getPath()));
+        Path copySourcePath = fileStatus.getPath();
+        SwiftObjectPath copyDestination = toObjectPath(
+                new Path(targetPath, copySourcePath.getName()));
+        try {
+          boolean success = swiftRestClient.
+                  copyObject(toObjectPath(copySourcePath), copyDestination);
+          if (success) {
+            swiftRestClient.delete(toObjectPath(copySourcePath));
+          } else {
+            throw new SwiftException("Copy of " + toObjectPath(fileStatus.getPath()) + " to "
+                    + targetObjectPath + "failed");
           }
+        } catch (FileNotFoundException e) {
+          LOG.info("Skipping rename of " + copySourcePath + " as it not found");
         }
       }
-
+      try {
+      swiftRestClient.delete(toObjectPath(src));
+      }catch (FileNotFoundException e) {
+        LOG.debug("Source directory " + src.toString() + " doesn't exist");
+      }
       return result;
     }
   }
 
+  public void copy(Path srcKey, Path dstKey) throws IOException {
+    SwiftObjectPath srcObject = toObjectPath(srcKey);
+    SwiftObjectPath destObject = toObjectPath(dstKey);
+    swiftRestClient.copyObject(srcObject, destObject);
+  }
+
+
   /**
-   * List a directory
+   * List a directory.
+   * This is O(n) for the number of objects in this path.
    *
    * @param path path to list
+   * @param nameOnly should the status be minimal (name) or should
+   * the (expensive) operation be made to ask for it.
    * @return the filestats of all the entities in the directory -or
-   *         an empty list if no objects were found listed under that prefix
+   * an empty list if no objects were found listed under that prefix
    * @throws IOException IO problems
    */
-  private List<FileStatus> listDirectory(SwiftObjectPath path) throws IOException {
-    String pathURI = path.toUriPath();
-    if (!pathURI.endsWith(Path.SEPARATOR)) {
-      pathURI += Path.SEPARATOR;
-    }
-
+  private List<FileStatus> listDirectory(SwiftObjectPath path,
+                                         boolean recursive,
+                                         boolean nameOnly) throws IOException {
     final byte[] bytes;
+    final ArrayList<FileStatus> files = new ArrayList<FileStatus>();
     try {
-      bytes = swiftRestClient.findObjectsByPrefix(path);
+      if (recursive) {
+        bytes = swiftRestClient.findObjectsByPrefix(path);
+      } else {
+        bytes = swiftRestClient.listObjectsInDirectory(path);
+      }
     } catch (FileNotFoundException e) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Directory not found " + path);
+        LOG.debug("" +
+                "File/Directory not found " + path);
       }
       if (SwiftUtils.isRootDir(path)) {
         return Collections.emptyList();
@@ -444,45 +505,105 @@ public class SwiftNativeFileSystemStore {
         if (LOG.isDebugEnabled()) {
           LOG.debug("lsdir " + path +
                   " status code says NO_CONTENT; "
-                  + e.toString());
+                  + e.toString(),
+                  e);
         }
         if (SwiftUtils.isRootDir(path)) {
           return Collections.emptyList();
         } else {
-          throw new FileNotFoundException("Not found: " + path);
+          //NO_CONTENT returned on something other than the root directory;
+          //see if it is there, and conver to empty list or not found
+          //depending on whether the entry exists.
+          FileStatus stat = getObjectMetadata(getCorrectSwiftPath(path));
+
+          if (SwiftUtils.isDirectory(stat)) {
+            //it's an empty directory. state that
+            return Collections.emptyList();
+          } else {
+            //it's a file -return that as the status
+            files.add(stat);
+            return files;
+          }
         }
       } else {
+        //a different status code: rethrow immediately
         throw e;
       }
     }
 
-    final StringTokenizer tokenizer = new StringTokenizer(new String(bytes), "\n");
-    final ArrayList<FileStatus> files = new ArrayList<FileStatus>();
+    //the byte array contains the files separated by newlines
+    final StringTokenizer tokenizer =
+            new StringTokenizer(new String(bytes), "\n");
+
+    Map<String, Boolean> names = new HashMap<String, Boolean>();
+    //insert own name as one to skip
+    names.put(path.getObject(), true);
 
     while (tokenizer.hasMoreTokens()) {
       String pathInSwift = tokenizer.nextToken();
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("entry: " + pathInSwift);
+      }
       if (!pathInSwift.startsWith("/")) {
         pathInSwift = "/".concat(pathInSwift);
       }
-      //this contains all
-      final FileStatus metadata = getObjectMetadata(new Path(pathInSwift));
-      if (metadata != null) {
-        files.add(metadata);
+      Path childPath = new Path(pathInSwift);
+      if (!names.containsKey(pathInSwift)) {
+        names.put(pathInSwift, true);
+        names.put(pathInSwift + "/", true);
+        //For each entry, get the metadata.
+        try {
+          FileStatus metadata;
+          if (nameOnly) {
+            metadata = new FileStatus(0, false, 0, 0, 0, childPath);
+          } else {
+            metadata = getObjectMetadata(childPath);
+          }
+          files.add(metadata);
+        } catch (FileNotFoundException e) {
+          //get Object metadata failed
+          LOG.info(
+                  "Object " + childPath + " was deleting during directory listing");
+        }
+      } else {
+        //hash map
+        LOG.debug("skipping adding self to path");
       }
     }
-
     return files;
   }
 
-  private Path getCorrectSwiftPath(Path path) throws URISyntaxException {
-    final URI fullUri = new URI(uri.getScheme(),
-            uri.getAuthority(),
-            path.toUri().getPath(),
-            null,
-            null);
+  private Path getCorrectSwiftPath(Path path) throws
+          SwiftException {
+    try {
+      final URI fullUri = new URI(uri.getScheme(),
+              uri.getAuthority(),
+              path.toUri().getPath(),
+              null,
+              null);
 
-    return new Path(fullUri);
+      return new Path(fullUri);
+    } catch (URISyntaxException e) {
+      throw new SwiftException("Specified path " + path + " is incorrect", e);
+    }
   }
+
+  private Path getCorrectSwiftPath(SwiftObjectPath path) throws
+          SwiftException {
+    try {
+      final URI fullUri = new URI(uri.getScheme(),
+              uri.getAuthority(),
+              path.getObject(),
+              null,
+              null);
+
+      return new Path(fullUri);
+    } catch (URISyntaxException e) {
+      throw new SwiftException("Specified path " + path + " is incorrect", e);
+    }
+  }
+
+
 
   /**
    * extracts URIs from json

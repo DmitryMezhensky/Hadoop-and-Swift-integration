@@ -21,12 +21,12 @@ package org.apache.hadoop.fs.swift;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * Utilities used across test cases

@@ -18,16 +18,12 @@
 
 package org.apache.hadoop.fs.swift.http;
 
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.http.HttpHeaders;
 
 /**
  * Constants used in the Swift REST protocol,
  * and in the properties used to configure the {@link SwiftRestClient}.
  */
-@InterfaceAudience.Public
-@InterfaceStability.Evolving
 public class SwiftProtocolConstants {
   public static final String HEADER_AUTH_KEY = "X-Auth-Token";
   public static final int SWIFT_HTTP_PORT = 8080;
@@ -41,10 +37,10 @@ public class SwiftProtocolConstants {
   public static final String SERVICE_CATALOG_CLOUD_FILES = "cloudFiles";
   public static final String SERVICE_CATALOG_OBJECT_STORE = "object-store";
   public static final String SWIFT_OBJECT_AUTH_ENDPOINT =
-    "/object_endpoint/";
+          "/object_endpoint/";
   public static final String X_OBJECT_MANIFEST = "X-Object-Manifest";
   public static final String X_CONTAINER_OBJECT_COUNT =
-    "X-Container-Object-Count";
+          "X-Container-Object-Count";
   public static final String X_CONTAINER_BYTES_USED = "X-Container-Bytes-Used";
 
   /**
@@ -62,13 +58,13 @@ public class SwiftProtocolConstants {
    * timeout for all connections
    */
   public static final String SWIFT_CONNECTION_TIMEOUT =
-    FS_SWIFT + ".connect.timeout";
+          FS_SWIFT + ".connect.timeout";
 
   /**
    * connection retry count for all connections
    */
   public static final String SWIFT_RETRY_COUNT =
-    FS_SWIFT + "connect.retry.count";
+          FS_SWIFT + "connect.retry.count";
 
   /**
    * Key for passing the service name as a property -not read from the
@@ -105,7 +101,7 @@ public class SwiftProtocolConstants {
   public static final String SWIFT_PASSWORD_PROPERTY = FS_SWIFT + DOT_PASSWORD;
   public static final String SWIFT_HTTP_PORT_PROPERTY = FS_SWIFT + DOT_HTTP_PORT;
   public static final String SWIFT_HTTPS_PORT_PROPERTY = FS_SWIFT
-                                                         + DOT_HTTPS_PORT;
+          + DOT_HTTPS_PORT;
   public static final String SWIFT_REGION_PROPERTY = FS_SWIFT + DOT_REGION;
   public static final String SWIFT_PUBLIC_PROPERTY = FS_SWIFT + DOT_PUBLIC;
 

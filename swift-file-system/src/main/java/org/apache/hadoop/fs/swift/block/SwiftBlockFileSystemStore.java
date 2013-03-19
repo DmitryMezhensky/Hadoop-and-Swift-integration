@@ -93,6 +93,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   /**
    * Get the data at the end of the key -on any failure the input stream
    * is closed.
+   *
    * @param key object in the store
    * @return a stream to get at the object -or null if not
    * @throws IOException IO problem
@@ -101,9 +102,9 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     InputStream inputStream = null;
     try {
       inputStream =
-        swiftRestClient.getDataAsInputStream(
-          SwiftObjectPath.fromPath(uri, keyToPath(key))
-          , SwiftRestClient.NEWEST);
+              swiftRestClient.getDataAsInputStream(
+                      SwiftObjectPath.fromPath(uri, keyToPath(key))
+                      , SwiftRestClient.NEWEST);
       inputStream.available();
       return inputStream;
     } catch (NullPointerException e) {
@@ -119,9 +120,10 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
 
   /**
    * Get the input stream starting from a specific point.
-   * @param key object key
+   *
+   * @param key            object key
    * @param byteRangeStart starting point
-   * @param length no. of bytes
+   * @param length         no. of bytes
    * @return an input stream
    * @throws IOException IO problems
    */
@@ -181,9 +183,9 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     InputStream inputStream = null;
     try {
       inputStream =
-        swiftRestClient.getDataAsInputStream(
-          SwiftObjectPath.fromPath(uri, path),
-          SwiftRestClient.NEWEST);
+              swiftRestClient.getDataAsInputStream(
+                      SwiftObjectPath.fromPath(uri, path),
+                      SwiftRestClient.NEWEST);
       final ByteArrayOutputStream data = new ByteArrayOutputStream();
       byte[] buffer = new byte[1024 * 1024]; // 1 mb
 
@@ -213,7 +215,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     final byte[] buffer;
     try {
       buffer =
-        swiftRestClient.findObjectsByPrefix(SwiftObjectPath.fromPath(uri, path));
+              swiftRestClient.findObjectsByPrefix(SwiftObjectPath.fromPath(uri, path));
     } catch (FileNotFoundException e) {
       return Collections.emptySet();
     }

@@ -77,7 +77,7 @@ public class TestJob extends Configured implements Tool {
     conf.set("fs.swift.service.rs.username", getParam(args, "username"));
     conf.set("fs.swift.service.rs.password", getParam(args, "pass"));
     conf.set("fs.swift.service.rs.public", "true");
-    //conf.set("fs.swift.service.rs.region", "region-a.geo-1");
+    conf.set("fs.swift.service.rs.region", "region-a.geo-1");
     conf.setInt("fs.swift.service.rs.http.port", 8080);
     conf.setInt("fs.swift.service.rs.https.port", 443);
 
@@ -85,7 +85,6 @@ public class TestJob extends Configured implements Tool {
 
     final Job job = new Job(conf, "Test Job");
     job.setJarByClass(TestJob.class);
-
 
     job.setInputFormatClass(TextInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);

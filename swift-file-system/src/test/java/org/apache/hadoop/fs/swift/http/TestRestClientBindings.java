@@ -36,7 +36,7 @@ public class TestRestClientBindings extends Assert {
   private static final String SERVICE = "sname";
   private static final String CONTAINER = "cname";
   private static final String FS_URI = "swift://"
-                                       + CONTAINER +"."+SERVICE + "/";
+          + CONTAINER + "." + SERVICE + "/";
   private static final String AUTH_URL = "http://localhost:8080/auth";
   private static final String USER = "user";
   private static final String PASS = "pass";
@@ -59,14 +59,14 @@ public class TestRestClientBindings extends Assert {
                               String val) {
     String instance = RestClientBindings.buildSwiftInstancePrefix(host);
     String confkey = instance
-                     + key;
+            + key;
     conf.set(confkey, val);
   }
 
   @Test
   public void testPrefixBuilder() throws Throwable {
     String built = RestClientBindings.buildSwiftInstancePrefix(SERVICE);
-    assertEquals("fs.swift.service."+ SERVICE, built);
+    assertEquals("fs.swift.service." + SERVICE, built);
   }
 
   @Test
@@ -112,13 +112,14 @@ public class TestRestClientBindings extends Assert {
   /**
    * inner test method that expects container extraction to fail
    * -if not prints a meaningful error message.
+   *
    * @param hostname hostname to parse
    */
   private static void expectExtractContainerFail(String hostname) {
     try {
       String container = RestClientBindings.extractContainerName(hostname);
-      fail("Expected an error -got a container of '"+ container
-          + "' from " +hostname);
+      fail("Expected an error -got a container of '" + container
+              + "' from " + hostname);
     } catch (SwiftConfigurationException expected) {
       //expected
     }
@@ -127,13 +128,14 @@ public class TestRestClientBindings extends Assert {
   /**
    * inner test method that expects service extraction to fail
    * -if not prints a meaningful error message.
+   *
    * @param hostname hostname to parse
    */
   public static void expectExtractServiceFail(String hostname) {
     try {
       String service = RestClientBindings.extractServiceName(hostname);
-      fail("Expected an error -got a service of '"+ service
-          + "' from " +hostname);
+      fail("Expected an error -got a service of '" + service
+              + "' from " + hostname);
     } catch (SwiftConfigurationException expected) {
       //expected
     }

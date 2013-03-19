@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.apache.hadoop.fs.swift;
 
 import org.apache.commons.io.IOUtils;
@@ -6,36 +24,24 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.swift.exceptions.SwiftOperationFailedException;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystemStore;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *  In-memory Swift emulator for tests.
+ * In-memory Swift emulator for tests.
  * <p/>
  * This is very unrealistic, and so the functional tests should be preferred.
  */
-
 public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
   private static final Log LOG = LogFactory.getLog(InMemorySwiftNativeStore.class);
   private SortedMap<String, FileStatus> metadataMap =
@@ -118,14 +124,14 @@ public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
   }
 
   @Override
-  public boolean renameDirectory(Path src, Path dst) throws IOException {
+  public void rename(Path src, Path dst) throws IOException {
     if (src.equals(dst)) {
-      return false;
+      throw new SwiftOperationFailedException("source equals dest");
     }
 
     final FileStatus fileStatus = metadataMap.get(src.toUri().toString());
     if (fileStatus == null) {
-      return false;
+      throw new SwiftOperationFailedException("source does not exist");
     }
 
     metadataMap.remove(src.toUri().toString());
@@ -135,7 +141,5 @@ public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
       dataMap.remove(src.toUri().toString());
       dataMap.put(dst.toUri().toString(), bytes);
     }
-
-    return true;
   }
 }

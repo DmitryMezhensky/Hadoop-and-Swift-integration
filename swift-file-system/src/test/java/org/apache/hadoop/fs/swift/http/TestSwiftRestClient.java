@@ -36,7 +36,7 @@ import java.net.URI;
 
 public class TestSwiftRestClient {
   private static final Log LOG =
-    LogFactory.getLog(TestSwiftRestClient.class);
+          LogFactory.getLog(TestSwiftRestClient.class);
 
   private Configuration conf;
   private boolean runTests;
@@ -79,8 +79,8 @@ public class TestSwiftRestClient {
       Path path = new Path("restTestPutAndDelete");
       SwiftObjectPath sobject = SwiftObjectPath.fromPath(serviceURI, path);
       byte[] stuff = new byte[1];
-      stuff[0]='a';
-      client.upload(sobject,new ByteArrayInputStream(stuff),stuff.length);
+      stuff[0] = 'a';
+      client.upload(sobject, new ByteArrayInputStream(stuff), stuff.length);
       //check file exists
       client.headRequest(sobject, SwiftRestClient.NEWEST);
       //delete the file
@@ -89,7 +89,7 @@ public class TestSwiftRestClient {
       try {
         Header[] headers = client.headRequest(sobject, SwiftRestClient.NEWEST);
         Assert.fail("Expected deleted file, but object is still present: "
-                    + sobject);
+                + sobject);
       } catch (FileNotFoundException e) {
         //expected
       }

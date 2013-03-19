@@ -16,31 +16,35 @@
  *  limitations under the License.
  */
 
-package org.apache.hadoop.fs.swift.exceptions;
+package org.apache.hadoop.fs.swift;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.swift.exceptions.SwiftInvalidResponseException;
+import org.junit.Test;
 
-/**
- * Exception raised when an operation is meant to work on a directory, but
- * the target path is not a directory
- */
-public class SwiftNotDirectoryException extends SwiftException {
+import java.io.EOFException;
+import java.io.IOException;
+
+import static org.apache.hadoop.fs.swift.SwiftTestUtils.readBytesToString;
+import static org.apache.hadoop.fs.swift.SwiftTestUtils.writeTextFile;
+import static org.junit.Assert.fail;
+
+public class TestSwiftFileSystemRead extends SwiftFileSystemBaseTest {
 
 
-  private final Path path;
+  @Test
+  public void testOverRead() throws IOException {
+    final String message = "message";
+    final Path filePath = new Path("/test/file.txt");
 
+    writeTextFile(fs, filePath, message, false);
 
-  public SwiftNotDirectoryException(Path path) {
-    this(path, "");
+    try {
+      readBytesToString(fs, filePath, 20);
+      fail("expected an exception");
+    } catch (SwiftInvalidResponseException e) {
+      //expected
+    }
   }
 
-  public SwiftNotDirectoryException(Path path,
-                                    String message) {
-    super(path.toString() + message);
-    this.path = path;
-  }
-
-  public Path getPath() {
-    return path;
-  }
 }

@@ -37,6 +37,14 @@
         <name>hadoop.security.authentication</name>
         <value>simple</value>
     </property>
+    <property>
+        <name>test.fs.swift.name</name>
+        <value>org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem</value>
+    </property>
+    <property>
+        <name>fs.swift.impl</name>
+        <value>org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem</value>
+    </property>
 
 
     <!--

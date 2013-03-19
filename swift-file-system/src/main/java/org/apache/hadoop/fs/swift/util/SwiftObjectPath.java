@@ -45,8 +45,9 @@ public final class SwiftObjectPath {
 
   /**
    * Build an instance from a (host, object) pair
+   *
    * @param container container name
-   * @param object object ref underneath the container
+   * @param object    object ref underneath the container
    */
   public SwiftObjectPath(String container, String object) {
 
@@ -94,24 +95,27 @@ public final class SwiftObjectPath {
   /**
    * Test for the object matching a path, ignoring the container
    * value.
+   *
    * @param path path string
    * @return true iff the object's name matches the path
    */
   public boolean objectMatches(String path) {
     return object.equals(path);
   }
+
   /**
    * Create a path tuple of (container, path), where the container is
    * chosen from the host of the URI.
-   * @param uri uri to start from
+   *
+   * @param uri  uri to start from
    * @param path path underneath
    * @return a new instance.
    * @throws SwiftConfigurationException if the URI host doesn't parse into
-   * container.service
+   *                                     container.service
    */
   public static SwiftObjectPath fromPath(URI uri,
                                          Path path)
-        throws  SwiftConfigurationException {
+          throws SwiftConfigurationException {
     return fromPath(uri, path, false);
   }
 
@@ -122,20 +126,21 @@ public final class SwiftObjectPath {
    * these /-es need to be appended, because when you construct a {@link Path}
    * instance, {@link Path#normalizePath(String)} is called -which strips
    * off any trailing slash.
-   * @param uri uri to start from
-   * @param path path underneath
+   *
+   * @param uri              uri to start from
+   * @param path             path underneath
    * @param addTrailingSlash should a trailing slash be added if there isn't one.
    * @return a new instance.
    * @throws SwiftConfigurationException if the URI host doesn't parse into
-   * container.service
+   *                                     container.service
    */
   public static SwiftObjectPath fromPath(URI uri,
                                          Path path,
                                          boolean addTrailingSlash)
-    throws SwiftConfigurationException {
+          throws SwiftConfigurationException {
 
     String url =
-      path.toUri().getPath().replaceAll(PATH_PART_PATTERN.pattern(), "");
+            path.toUri().getPath().replaceAll(PATH_PART_PATTERN.pattern(), "");
     //add a trailing slash if needed
     if (addTrailingSlash && !url.endsWith("/")) {
       url += "/";

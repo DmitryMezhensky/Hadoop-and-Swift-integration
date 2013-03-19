@@ -25,6 +25,7 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.swift.exceptions.SwiftException;
 import org.apache.hadoop.fs.swift.exceptions.SwiftNotDirectoryException;
+import org.apache.hadoop.fs.swift.exceptions.SwiftOperationFailedException;
 import org.apache.hadoop.fs.swift.exceptions.SwiftUnsupportedFeatureException;
 import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
 import org.apache.hadoop.fs.swift.util.SwiftUtils;
@@ -185,7 +186,7 @@ public class SwiftNativeFileSystem extends FileSystem {
     // each block has its own location -which may be determinable
     // from the Swift client API, depending on the remote server
 
-    final FileStatus[] listOfFileBlocks = store.listSubPaths(file.getPath(), false, true);
+    final FileStatus[] listOfFileBlocks = store.listSubPaths(file.getPath());
     List<URI> locations = new ArrayList<URI>();
     if (listOfFileBlocks.length > 1) {
       for (FileStatus fileStatus : listOfFileBlocks) {
@@ -287,7 +288,7 @@ public class SwiftNativeFileSystem extends FileSystem {
     if (LOG.isDebugEnabled()) {
       LOG.debug("SwiftFileSystem.listStatus for: " + f);
     }
-    return store.listSubPaths(f, false, false);
+    return store.listSubPaths(f);
   }
 
   /**
@@ -315,6 +316,7 @@ public class SwiftNativeFileSystem extends FileSystem {
     } catch (FileNotFoundException e) {
       //nothing to do
     }
+
     if (fileStatus != null && !SwiftUtils.isDirectory(fileStatus)) {
       if (overwrite) {
         delete(file, true);
@@ -362,7 +364,17 @@ public class SwiftNativeFileSystem extends FileSystem {
   @Override
   public boolean rename(Path src, Path dst) throws IOException {
 
-    return store.renameDirectory(src, dst);
+    try {
+      store.rename(makeAbsolute(src), makeAbsolute(dst));
+      //success
+      return true;
+    } catch (SwiftOperationFailedException e) {
+      //downgrade to a failure
+      return false;
+    } catch (FileNotFoundException e) {
+      //downgrade to a failure
+      return false;
+    }
   }
 
 

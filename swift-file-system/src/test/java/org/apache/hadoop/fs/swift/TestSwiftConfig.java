@@ -1,15 +1,3 @@
-package org.apache.hadoop.fs.swift;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.swift.http.SwiftRestClient;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -27,7 +15,21 @@ import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.fs.swift;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.swift.http.SwiftRestClient;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
+
+/**
+ *
+ */
 public class TestSwiftConfig {
 
 
@@ -73,21 +75,21 @@ public class TestSwiftConfig {
 
   public void testGoodRetryCount() throws Exception {
     final Configuration configuration = createCoreConfig();
-    configuration.set(SWIFT_RETRY_COUNT,"3");
+    configuration.set(SWIFT_RETRY_COUNT, "3");
     mkInstance(configuration);
   }
 
   @Test(expected = org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException.class)
   public void testBadRetryCount() throws Exception {
     final Configuration configuration = createCoreConfig();
-    configuration.set(SWIFT_RETRY_COUNT,"three");
+    configuration.set(SWIFT_RETRY_COUNT, "three");
     mkInstance(configuration);
   }
 
   @Test(expected = org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException.class)
   public void testBadConnectTimeout() throws Exception {
     final Configuration configuration = createCoreConfig();
-    configuration.set(SWIFT_CONNECTION_TIMEOUT,"three");
+    configuration.set(SWIFT_CONNECTION_TIMEOUT, "three");
     mkInstance(configuration);
   }
 
@@ -105,8 +107,8 @@ public class TestSwiftConfig {
   }
 
   private void mkInstance(Configuration configuration) throws
-                                                       IOException,
-                                                       URISyntaxException {
+          IOException,
+          URISyntaxException {
     URI uri = new URI("swift://container.openstack/");
     SwiftRestClient.getInstance(uri, configuration);
   }

@@ -18,29 +18,18 @@
 
 package org.apache.hadoop.fs.swift.exceptions;
 
-import org.apache.hadoop.fs.Path;
-
 /**
- * Exception raised when an operation is meant to work on a directory, but
- * the target path is not a directory
+ * Used to relay exceptions upstream from the inner implementation
+ * to the public API, where it is downgraded to a log+failure.
+ * Making it visible internally aids testing
  */
-public class SwiftNotDirectoryException extends SwiftException {
+public class SwiftOperationFailedException extends SwiftException {
 
-
-  private final Path path;
-
-
-  public SwiftNotDirectoryException(Path path) {
-    this(path, "");
+  public SwiftOperationFailedException(String message) {
+    super(message);
   }
 
-  public SwiftNotDirectoryException(Path path,
-                                    String message) {
-    super(path.toString() + message);
-    this.path = path;
-  }
-
-  public Path getPath() {
-    return path;
+  public SwiftOperationFailedException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

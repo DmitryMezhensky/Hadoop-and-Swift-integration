@@ -26,22 +26,21 @@ import org.apache.hadoop.fs.FileStatus;
 public final class SwiftUtils {
 
   /**
-   *
    * Join two (non null) paths, inserting a forward slash between them
    * if needed
+   *
    * @param path1 first path
    * @param path2 second path
    * @return the combined path
    */
   public static String joinPaths(String path1, String path2) {
     StringBuilder result =
-      new StringBuilder(path1.length() + path2.length() + 1);
+            new StringBuilder(path1.length() + path2.length() + 1);
     result.append(path1);
     boolean insertSlash = true;
     if (path1.endsWith("/")) {
       insertSlash = false;
-    }
-    else if (path2.startsWith("/")) {
+    } else if (path2.startsWith("/")) {
       insertSlash = false;
     }
     if (insertSlash) {
@@ -54,9 +53,10 @@ public final class SwiftUtils {
   /**
    * This test contains the is-directory logic for Swift, so if
    * changed there is only one place for it.
+   *
    * @param fileStatus status to examine
    * @return true if we consider this status to be representative of a
-   * directory.
+   *         directory.
    */
   public static boolean isDirectory(FileStatus fileStatus) {
     return fileStatus.isDir() || isFilePretendingToBeDirectory(fileStatus);
@@ -65,6 +65,7 @@ public final class SwiftUtils {
   /**
    * Test for the entry being a file that is treated as if it is a
    * directory
+   *
    * @param fileStatus status
    * @return true if it meets the rules for being a directory
    */
@@ -80,7 +81,8 @@ public final class SwiftUtils {
    * Query to see if the possibleChild object is a child path of the parent.
    * The test is done by probing for the path of the first object being
    * at the start of the second -with a trailing slash.
-   * @param parent Parent dir
+   *
+   * @param parent        Parent dir
    * @param possibleChild possible child dir
    * @return true iff the possibleChild is under the parent directory
    */

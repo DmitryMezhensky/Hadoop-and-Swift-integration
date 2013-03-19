@@ -33,7 +33,7 @@ import java.io.*;
 class SwiftNativeOutputStream extends OutputStream {
   private long FILE_PART_SIZE = 4768709000l; // files greater than 4.5Gb are divided into parts
   private static final Log LOG =
-    LogFactory.getLog(SwiftNativeOutputStream.class);
+          LogFactory.getLog(SwiftNativeOutputStream.class);
   private Configuration conf;
   private String key;
   private File backupFile;
@@ -74,6 +74,7 @@ class SwiftNativeOutputStream extends OutputStream {
 
   /**
    * check that the output stream is open
+   *
    * @throws SwiftException if it is not
    */
   private synchronized void verifyOpen() throws SwiftException {
@@ -98,8 +99,8 @@ class SwiftNativeOutputStream extends OutputStream {
           nativeStore.createManifestForPartUpload(new Path(key));
         } else {
           nativeStore.uploadFile(new Path(key),
-                                 new FileInputStream(backupFile),
-                                 backupFile.length());
+                  new FileInputStream(backupFile),
+                  backupFile.length());
         }
       }
     } finally {
@@ -137,9 +138,9 @@ class SwiftNativeOutputStream extends OutputStream {
     partUpload = true;
     backupStream.close();
     nativeStore.uploadFilePart(new Path(key),
-                               partNumber,
-                               new FileInputStream(backupFile),
-                               backupFile.length());
+            partNumber,
+            new FileInputStream(backupFile),
+            backupFile.length());
     backupFile.delete();
     backupFile = newBackupFile();
     backupStream = new BufferedOutputStream(new FileOutputStream(backupFile));

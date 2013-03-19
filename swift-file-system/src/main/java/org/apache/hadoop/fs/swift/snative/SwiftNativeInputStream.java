@@ -105,6 +105,7 @@ class SwiftNativeInputStream extends FSInputStream {
   /**
    * close the stream. After this the stream is not usable.
    * This method is thread-safe and idempotent.
+   *
    * @throws IOException on IO problems.
    */
   @Override

@@ -79,8 +79,8 @@ public class PasswordCredentials {
   @Override
   public String toString() {
     return "PasswordCredentials :" +
-           "username='" + username + '\'' +
-           ", password len='" + ((password==null)?-1:password.length()) + '\'' ;
+            "username='" + username + '\'' +
+            ", password len='" + ((password == null) ? -1 : password.length()) + '\'';
   }
 }
 

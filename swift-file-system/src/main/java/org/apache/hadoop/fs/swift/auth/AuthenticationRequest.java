@@ -73,8 +73,8 @@ public class AuthenticationRequest {
   @Override
   public String toString() {
     return "AuthenticationRequest{" +
-           "tenantName='" + tenantName + '\'' +
-           ", passwordCredentials=" + passwordCredentials +
-           '}';
+            "tenantName='" + tenantName + '\'' +
+            ", passwordCredentials=" + passwordCredentials +
+            '}';
   }
 }

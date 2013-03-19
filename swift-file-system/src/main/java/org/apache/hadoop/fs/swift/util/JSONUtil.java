@@ -21,6 +21,7 @@ package org.apache.hadoop.fs.swift.util;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.type.CollectionType;
 import org.codehaus.jackson.type.TypeReference;
 
 import java.io.IOException;
@@ -94,5 +95,27 @@ public class JSONUtil {
     } catch (IOException e) {
       throw new RuntimeException("Error generating response", e);
     }
+  }
+
+  /**
+   * @param value          json string
+   * @param collectionType class describing how to deserialize collection of objects
+   * @param <T>            type
+   * @return deserialized  T object
+   */
+  public static <T> T toObject(String value, final CollectionType collectionType) {
+    try {
+      return jsonMapper.readValue(value, collectionType);
+    } catch (JsonGenerationException e) {
+      throw new RuntimeException("Error generating response", e);
+    } catch (JsonMappingException e) {
+      throw new RuntimeException("Error generating response", e);
+    } catch (IOException e) {
+      throw new RuntimeException("Error generating response", e);
+    }
+  }
+
+  public static ObjectMapper getJsonMapper() {
+    return jsonMapper;
   }
 }

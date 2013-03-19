@@ -29,12 +29,12 @@ import java.net.URISyntaxException;
  * This is an unrealistic test -the real test is preferable.
  */
 public class DisabledTestNativeSwiftInMemoryFileSystemContract
-  extends NativeSwiftFileSystemContractBaseTest {
+        extends NativeSwiftFileSystemContractBaseTest {
 
   protected SwiftNativeFileSystem createSwiftFS() throws IOException {
     SwiftNativeFileSystem
-      swiftNativeFileSystem =
-      new SwiftNativeFileSystem(new InMemorySwiftNativeStore());
+            swiftNativeFileSystem =
+            new SwiftNativeFileSystem(new InMemorySwiftNativeStore());
     return swiftNativeFileSystem;
   }
 

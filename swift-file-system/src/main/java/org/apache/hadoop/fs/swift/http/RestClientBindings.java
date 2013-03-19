@@ -20,8 +20,6 @@ package org.apache.hadoop.fs.swift.http;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException;
 
@@ -33,24 +31,23 @@ import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
 /**
  * This class implements the binding logic between Hadoop configurations
  * and the swift rest client.
- *
+ * <p/>
  * The swift rest client takes a Properties instance containing
  * the string values it uses to bind to a swift endpoint.
- *
+ * <p/>
  * This class extracts the values for a specific filesystem endpoint
  * and then builds an appropriate Properties file.
  */
-@InterfaceAudience.Private
-@InterfaceStability.Evolving
 public final class RestClientBindings {
   private static final Log LOG = LogFactory.getLog(RestClientBindings.class);
 
-  public static final String E_INVALID_NAME= "Invalid swift hostname '%s':" +
-    " hostname must in form container.service";
+  public static final String E_INVALID_NAME = "Invalid swift hostname '%s':" +
+          " hostname must in form container.service";
 
   /**
    * Public for testing : build the full prefix for use in resolving
    * configuration items
+   *
    * @param service service to use
    * @return the prefix string <i>without any trailing "."</i>
    */
@@ -60,23 +57,25 @@ public final class RestClientBindings {
 
   /**
    * Raise an exception for an invalid service name
+   *
    * @param hostname hostname that was being parsed
    * @return an exception to throw
    */
   private static SwiftConfigurationException invalidName(String hostname) {
     return new SwiftConfigurationException(
-      String.format(E_INVALID_NAME, hostname));
+            String.format(E_INVALID_NAME, hostname));
   }
 
   /**
    * Get the container name from the hostname -the single element before the
    * first "." in the hostname
+   *
    * @param hostname hostname to split
    * @return the container
    * @throws SwiftConfigurationException
    */
   public static String extractContainerName(String hostname) throws
-                                                             SwiftConfigurationException {
+          SwiftConfigurationException {
     int i = hostname.indexOf(".");
     if (i <= 0) {
       throw invalidName(hostname);
@@ -85,18 +84,19 @@ public final class RestClientBindings {
   }
 
   public static String extractContainerName(URI uri) throws
-                                                     SwiftConfigurationException {
+          SwiftConfigurationException {
     return extractContainerName(uri.getHost());
   }
 
   /**
    * Get the service name from a longer hostname string
+   *
    * @param hostname hostname
    * @return the separated out service name
    * @throws SwiftConfigurationException if the hostname was invalid
    */
   public static String extractServiceName(String hostname) throws
-                                                           SwiftConfigurationException {
+          SwiftConfigurationException {
     int i = hostname.indexOf(".");
     if (i <= 0) {
       throw invalidName(hostname);
@@ -110,23 +110,24 @@ public final class RestClientBindings {
   }
 
   public static String extractServiceName(URI uri) throws
-                                                   SwiftConfigurationException {
+          SwiftConfigurationException {
     return extractServiceName(uri.getHost());
   }
 
   /**
    * Build a properties instance bound to the configuration file -using
    * the filesystem URI as the source of the information.
+   *
    * @param fsURI filesystem URI
-   * @param conf configuration
+   * @param conf  configuration
    * @return a properties file with the instance-specific properties extracted
-   * and bound to the swift client properties.
+   *         and bound to the swift client properties.
    * @throws SwiftConfigurationException if the configuration is invalid
    */
   public static Properties bind(URI fsURI, Configuration conf) throws
-                                                               SwiftConfigurationException {
+          SwiftConfigurationException {
     String host = fsURI.getHost();
-    if (host == null || host.isEmpty() ) {
+    if (host == null || host.isEmpty()) {
       //expect shortnames -> conf names
       throw invalidName(host);
     }
@@ -138,7 +139,7 @@ public final class RestClientBindings {
     String prefix = buildSwiftInstancePrefix(service);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Filesystem " + fsURI
-                + " is using configuration keys " + prefix);
+              + " is using configuration keys " + prefix);
     }
     Properties props = new Properties();
     props.setProperty(SWIFT_SERVICE_PROPERTY, service);
@@ -150,7 +151,7 @@ public final class RestClientBindings {
     copy(conf, prefix + DOT_REGION, props, SWIFT_REGION_PROPERTY, false);
     copy(conf, prefix + DOT_HTTP_PORT, props, SWIFT_HTTP_PORT_PROPERTY, false);
     copy(conf, prefix +
-               DOT_HTTPS_PORT, props, SWIFT_HTTPS_PORT_PROPERTY, false);
+            DOT_HTTPS_PORT, props, SWIFT_HTTPS_PORT_PROPERTY, false);
 
     //boolean value
     boolean isPublicURL = conf.getBoolean(prefix + DOT_PUBLIC, false);
@@ -172,29 +173,34 @@ public final class RestClientBindings {
 
   /**
    * Copy a (trimmed) property from the configuration file to the properties file.
-   *
+   * <p/>
    * If marked as required and not found in the configuration, an
    * exception is raised.
    * If not required -and missing- then the property will not be set.
    * In this case, if the property is already in the Properties instance,
    * it will remain untouched.
-   * @param conf source configuration
-   * @param confkey key in the configuration file
-   * @param props destination property set
+   *
+   * @param conf     source configuration
+   * @param confkey  key in the configuration file
+   * @param props    destination property set
    * @param propsKey key in the property set
    * @param required is the property required
    * @throws SwiftConfigurationException if the property is required but was
-   * not found in the configuration instance.
+   *                                     not found in the configuration instance.
    */
   public static void copy(Configuration conf, String confkey, Properties props,
                           String propsKey,
                           boolean required) throws SwiftConfigurationException {
-    String val = conf.getTrimmed(confkey);
+    //TODO: replace. version compatibility issue conf.getTrimmed fails with NoSuchMethodError
+    String val = conf.get(confkey);
+    if (val != null) {
+      val = val.trim();
+    }
     if (required && val == null) {
       throw new SwiftConfigurationException(
-        "Missing mandatory configuration option: "
-        +
-        confkey);
+              "Missing mandatory configuration option: "
+                      +
+                      confkey);
     }
     set(props, propsKey, val);
   }

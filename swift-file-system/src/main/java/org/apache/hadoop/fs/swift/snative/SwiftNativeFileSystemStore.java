@@ -602,6 +602,9 @@ public class SwiftNativeFileSystemStore {
     boolean copySucceeded = swiftRestClient.copyObject(srcObject, destObject);
     if (copySucceeded) {
       //if the copy worked delete the original
+      if (getObjectMetadata(getCorrectSwiftPath(destObject)) == null) {
+        innerCreateDirectory(destObject);
+      }
       swiftRestClient.delete(srcObject);
     } else {
       throw new SwiftException("Copy of " + srcObject + " to "

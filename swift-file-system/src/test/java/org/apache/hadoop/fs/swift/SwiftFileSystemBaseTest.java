@@ -60,7 +60,7 @@ public class SwiftFileSystemBaseTest extends Assert {
 
   @After
   public void tearDown() throws Exception {
-    cleanupInTeardown(fs, "/test");
+    cleanupInTeardown(fs, "/");
   }
 
   /**

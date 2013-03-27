@@ -37,7 +37,8 @@ public class AuthenticationRequest {
    * @param tenantName
    * @param passwordCredentials
    */
-  public AuthenticationRequest(String tenantName, PasswordCredentials passwordCredentials) {
+  public AuthenticationRequest(String tenantName,
+                               PasswordCredentials passwordCredentials) {
     this.tenantName = tenantName;
     this.passwordCredentials = passwordCredentials;
   }

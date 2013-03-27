@@ -36,7 +36,10 @@ public class SwiftFileSystemTestBlockLocation extends SwiftFileSystemBaseTest {
     FileStatus fileStatus = fs.getFileStatus(path);
     BlockLocation[] locations =
             getFs().getFileBlockLocations(fileStatus, 0, 1);
-    assertNotEqual("No block locations supplied for " + fileStatus, 0, locations.length);
+
+    assertNotEqual("No block locations supplied for " + fileStatus,
+            0, locations.length);
+
     for (BlockLocation location : locations) {
       LOG.info(location);
       String[] hosts = location.getHosts();

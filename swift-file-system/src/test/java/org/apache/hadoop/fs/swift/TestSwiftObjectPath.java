@@ -71,7 +71,8 @@ public class TestSwiftObjectPath {
 
   @Test
   public void testParseAuthenticatedUrl() throws Exception {
-    final String pathString = "swift://container.service1/v2/AUTH_00345h34l93459y4/home/tom/documents/finance.docx";
+    final String pathString =
+            "swift://container.service1/v2/AUTH_00345h34l93459y4/home/tom/documents/finance.docx";
     final URI uri = new URI(pathString);
     final Path path = new Path(pathString);
     final SwiftObjectPath expected = SwiftObjectPath.fromPath(uri, path);

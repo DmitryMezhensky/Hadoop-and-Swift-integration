@@ -119,8 +119,10 @@ public class SwiftBlockOutputStream extends OutputStream {
    * @param buffersize size of buffer
    * @throws IOException
    */
-  public SwiftBlockOutputStream(Configuration conf, FileSystemStore store, Path path, long blockSize,
-                                int buffersize) throws IOException {
+  public SwiftBlockOutputStream(Configuration conf,
+                                FileSystemStore store, Path path,
+                                long blockSize, int buffersize)
+          throws IOException {
     this.conf = conf;
     this.store = store;
     this.path = path;
@@ -166,7 +168,8 @@ public class SwiftBlockOutputStream extends OutputStream {
   }
 
   @Override
-  public synchronized void write(byte b[], int off, int len) throws IOException {
+  public synchronized void write(byte b[], int off, int len)
+          throws IOException {
     if (closed) {
       throw new IOException("Stream closed");
     }
@@ -271,7 +274,8 @@ public class SwiftBlockOutputStream extends OutputStream {
    * @throws IOException
    */
   private synchronized void internalClose() throws IOException {
-    INode inode = new INode(INode.FILE_TYPES[1], blocks.toArray(new Block[blocks.size()]));
+    INode inode = new INode(INode.FILE_TYPES[1],
+            blocks.toArray(new Block[blocks.size()]));
     store.storeINode(path, inode);
   }
 

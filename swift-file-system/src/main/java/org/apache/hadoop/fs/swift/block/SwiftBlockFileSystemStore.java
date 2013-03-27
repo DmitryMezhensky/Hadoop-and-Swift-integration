@@ -127,9 +127,11 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
    * @return an input stream
    * @throws IOException IO problems
    */
-  private InputStream get(String key, long byteRangeStart, long length) throws IOException {
+  private InputStream get(String key, long byteRangeStart, long length)
+          throws IOException {
 
-    return swiftRestClient.getDataAsInputStream(SwiftObjectPath.fromPath(uri, keyToPath(key)), byteRangeStart, length);
+    return swiftRestClient.getDataAsInputStream(
+            SwiftObjectPath.fromPath(uri, keyToPath(key)), byteRangeStart, length);
   }
 
   public INode retrieveINode(Path path) throws IOException {
@@ -193,7 +195,8 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
         data.write(buffer);
       }
 
-      final StringTokenizer tokenizer = new StringTokenizer(new String(data.toByteArray()), "\n");
+      final StringTokenizer tokenizer =
+              new StringTokenizer(new String(data.toByteArray()), "\n");
 
       final Set<Path> paths = new HashSet<Path>();
       while (tokenizer.hasMoreTokens()) {
@@ -214,12 +217,13 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
 
     final byte[] buffer;
     try {
-      buffer =
-              swiftRestClient.findObjectsByPrefix(SwiftObjectPath.fromPath(uri, path));
+      buffer = swiftRestClient.findObjectsByPrefix(
+              SwiftObjectPath.fromPath(uri, path));
     } catch (FileNotFoundException e) {
       return Collections.emptySet();
     }
-    final StringTokenizer tokenizer = new StringTokenizer(new String(buffer), "\n");
+    final StringTokenizer tokenizer =
+            new StringTokenizer(new String(buffer), "\n");
 
     final Set<Path> paths = new HashSet<Path>();
     while (tokenizer.hasMoreTokens()) {
@@ -252,7 +256,8 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
   public List<URI> getObjectLocation(Path path) throws IOException {
     final byte[] objectLocation;
     try {
-      objectLocation = swiftRestClient.getObjectLocation(SwiftObjectPath.fromPath(uri, path));
+      objectLocation = swiftRestClient.getObjectLocation(
+              SwiftObjectPath.fromPath(uri, path));
     } catch (SwiftException e) {
       throw new IOException(e);
     }

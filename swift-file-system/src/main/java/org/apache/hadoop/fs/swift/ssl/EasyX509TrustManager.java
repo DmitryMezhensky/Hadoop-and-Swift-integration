@@ -54,9 +54,11 @@ public class EasyX509TrustManager implements X509TrustManager {
   /**
    * Constructor for EasyX509TrustManager.
    */
-  public EasyX509TrustManager(KeyStore keystore) throws NoSuchAlgorithmException, KeyStoreException {
+  public EasyX509TrustManager(KeyStore keystore)
+          throws NoSuchAlgorithmException, KeyStoreException {
     super();
-    TrustManagerFactory factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    TrustManagerFactory factory = TrustManagerFactory
+            .getInstance(TrustManagerFactory.getDefaultAlgorithm());
     factory.init(keystore);
     TrustManager[] trustmanagers = factory.getTrustManagers();
     if (trustmanagers.length == 0) {
@@ -68,14 +70,18 @@ public class EasyX509TrustManager implements X509TrustManager {
   /**
    * @see javax.net.ssl.X509TrustManager#checkClientTrusted(X509Certificate[], String authType)
    */
-  public void checkClientTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
+  public void checkClientTrusted(X509Certificate[] certificates, String authType)
+          throws CertificateException {
+
     standardTrustManager.checkClientTrusted(certificates, authType);
   }
 
   /**
    * @see javax.net.ssl.X509TrustManager#checkServerTrusted(X509Certificate[], String authType)
    */
-  public void checkServerTrusted(X509Certificate[] certificates, String authType) throws CertificateException {
+  public void checkServerTrusted(X509Certificate[] certificates, String authType)
+          throws CertificateException {
+
     if ((certificates != null) && LOG.isDebugEnabled()) {
       LOG.debug("Server certificate chain:");
       for (int i = 0; i < certificates.length; i++) {

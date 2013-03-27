@@ -65,7 +65,8 @@ public class SwiftBlockInputStream extends FSInputStream {
    * @param inode of file
    * @param stats Hadoop statistics
    */
-  public SwiftBlockInputStream(FileSystemStore store, INode inode, FileSystem.Statistics stats) {
+  public SwiftBlockInputStream(FileSystemStore store,
+                               INode inode, FileSystem.Statistics stats) {
     this.store = store;
     this.stats = stats;
     this.blocks = inode.getBlocks();
@@ -94,7 +95,8 @@ public class SwiftBlockInputStream extends FSInputStream {
   }
 
   @Override
-  public synchronized boolean seekToNewSource(long targetPos) throws IOException {
+  public synchronized boolean seekToNewSource(long targetPos)
+          throws IOException {
     return false;
   }
 
@@ -120,7 +122,8 @@ public class SwiftBlockInputStream extends FSInputStream {
   }
 
   @Override
-  public synchronized int read(byte buf[], int off, int len) throws IOException {
+  public synchronized int read(byte buf[], int off, int len)
+          throws IOException {
     if (closed) {
       throw new IOException("Stream closed");
     }
@@ -147,7 +150,8 @@ public class SwiftBlockInputStream extends FSInputStream {
    * @param target position in file
    * @throws IOException
    */
-  private synchronized void blockSeekTo(long target) throws IOException {
+  private synchronized void blockSeekTo(long target)
+          throws IOException {
     //
     // Compute desired block
     //
@@ -166,7 +170,8 @@ public class SwiftBlockInputStream extends FSInputStream {
       }
     }
     if (targetBlock < 0) {
-      throw new IOException("Impossible situation: could not find target position " + target);
+      throw new IOException("Impossible situation: could not " +
+              "find target position " + target);
     }
     long offsetIntoBlock = target - targetBlockStart;
 

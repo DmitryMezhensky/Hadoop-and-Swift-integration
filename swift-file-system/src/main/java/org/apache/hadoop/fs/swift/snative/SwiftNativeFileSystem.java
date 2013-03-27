@@ -93,7 +93,8 @@ public class SwiftNativeFileSystem extends FileSystem {
     }
     this.uri = fsuri;
     this.workingDir = new Path("/user",
-            System.getProperty("user.name")).makeQualified(uri, new Path(System.getProperty("user.name")));
+            System.getProperty("user.name")).makeQualified(uri,
+            new Path(System.getProperty("user.name")));
     if (LOG.isDebugEnabled()) {
       LOG.debug("Initializing SwiftNativeFileSystem against URI " + uri
               + " and working dir " + workingDir);
@@ -294,8 +295,8 @@ public class SwiftNativeFileSystem extends FileSystem {
   /**
    * This optional operation is not supported yet
    */
-  public FSDataOutputStream append(Path f, int bufferSize, Progressable progress) throws
-          IOException {
+  public FSDataOutputStream append(Path f, int bufferSize, Progressable progress)
+          throws IOException {
     LOG.debug("SwiftFileSystem.append");
     throw new SwiftUnsupportedFeatureException("Not supported: append()");
   }
@@ -306,8 +307,10 @@ public class SwiftNativeFileSystem extends FileSystem {
   @Override
   public FSDataOutputStream create(Path file, FsPermission permission,
                                    boolean overwrite, int bufferSize,
-                                   short replication, long blockSize, Progressable progress)
+                                   short replication, long blockSize,
+                                   Progressable progress)
           throws IOException {
+
     LOG.debug("SwiftFileSystem.create");
 
     FileStatus fileStatus = null;

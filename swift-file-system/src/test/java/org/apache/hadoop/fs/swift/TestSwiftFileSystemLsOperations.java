@@ -58,7 +58,7 @@ public class TestSwiftFileSystemLsOperations extends SwiftFileSystemBaseTest {
   @Test
   public void testListLevelTest() throws Exception {
     FileStatus[] paths = fs.listStatus(path("/test"));
-    assertEquals(SwiftTestUtils.dumpStats("/test", paths), 5, paths.length);
+    assertEquals(SwiftTestUtils.dumpStats("/test", paths), 1, paths.length);
     assertEquals(path("/test/hadoop"), paths[0].getPath());
   }
 
@@ -67,7 +67,7 @@ public class TestSwiftFileSystemLsOperations extends SwiftFileSystemBaseTest {
     FileStatus[] paths;
     paths = fs.listStatus(path("/test/hadoop"));
     String stats = SwiftTestUtils.dumpStats("/test/hadoop", paths);
-    assertEquals(stats, 4, paths.length);
+    assertEquals(stats, 3, paths.length);
     assertEquals(stats, path("/test/hadoop/a"), paths[0].getPath());
     assertEquals(stats, path("/test/hadoop/b"), paths[1].getPath());
     assertEquals(stats, path("/test/hadoop/c"), paths[2].getPath());
@@ -93,7 +93,7 @@ public class TestSwiftFileSystemLsOperations extends SwiftFileSystemBaseTest {
   @Test
   public void testListEmptyRoot() throws Throwable {
     FileStatus[] fileStatuses = fs.listStatus(path("/"));
-    assertEquals(6, fileStatuses.length);
+    assertEquals(1, fileStatuses.length);
   }
 
   @Test
@@ -101,7 +101,7 @@ public class TestSwiftFileSystemLsOperations extends SwiftFileSystemBaseTest {
     Path file = path("/test");
     touch(fs, file, "some data");
     FileStatus[] fileStatuses = fs.listStatus(new Path("/"));
-    assertEquals(6, fileStatuses.length);
+    assertEquals(1, fileStatuses.length);
     FileStatus status = fileStatuses[0];
     assertEquals(file, status.getPath());
   }

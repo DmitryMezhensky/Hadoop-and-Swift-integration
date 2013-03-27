@@ -121,6 +121,7 @@ public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
     assertExists("Renamed nested file1", path("/test/new/newdir/dir/file1"));
     assertPathDoesNotExist("Nested file1 should have been deleted",
             path("/test/olddir/dir/file1"));
+
     assertExists("Renamed nested subdir",
             path("/test/new/newdir/dir/subdir/"));
     assertExists("file under subdir",

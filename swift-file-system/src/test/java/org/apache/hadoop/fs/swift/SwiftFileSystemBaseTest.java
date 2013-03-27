@@ -77,7 +77,9 @@ public class SwiftFileSystemBaseTest extends Assert {
     return getServiceURI(new Configuration());
   }
 
-  protected SwiftNativeFileSystem createSwiftFS(URI uri, Configuration conf) throws IOException {
+  protected SwiftNativeFileSystem createSwiftFS(URI uri, Configuration conf)
+          throws IOException {
+
     fileSystemStore = new SwiftNativeFileSystemStore();
     fileSystemStore.initialize(uri, conf);
 

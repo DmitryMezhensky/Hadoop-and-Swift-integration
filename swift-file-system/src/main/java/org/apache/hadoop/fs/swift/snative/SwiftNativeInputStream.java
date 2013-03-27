@@ -89,7 +89,8 @@ class SwiftNativeInputStream extends FSInputStream {
   }
 
   @Override
-  public synchronized int read(byte[] b, int off, int len) throws IOException {
+  public synchronized int read(byte[] b, int off, int len)
+          throws IOException {
     int result;
     result = in.read(b, off, len);
     if (result > 0) {

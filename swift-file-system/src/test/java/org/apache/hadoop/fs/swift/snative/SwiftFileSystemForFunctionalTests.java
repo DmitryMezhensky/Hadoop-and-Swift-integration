@@ -37,7 +37,9 @@ import java.net.URI;
 public class SwiftFileSystemForFunctionalTests extends SwiftNativeFileSystem {
   private SwiftNativeFileSystemStore store;
 
-  public void initialize(URI swiftUri, Configuration configuration) throws IOException {
+  public void initialize(URI swiftUri, Configuration configuration)
+          throws IOException {
+
     super.initialize(swiftUri, configuration);
     setConf(configuration);
     if (store == null) {
@@ -48,8 +50,9 @@ public class SwiftFileSystemForFunctionalTests extends SwiftNativeFileSystem {
   }
 
   @Override
-  public FSDataOutputStream create(Path file, FsPermission permission, boolean overwrite,
-                                   int bufferSize, short replication, long blockSize,
+  public FSDataOutputStream create(Path file, FsPermission permission,
+                                   boolean overwrite, int bufferSize,
+                                   short replication, long blockSize,
                                    Progressable progress) throws IOException {
 
     FileStatus fileStatus = null;
@@ -81,10 +84,12 @@ public class SwiftFileSystemForFunctionalTests extends SwiftNativeFileSystem {
       filePartSize.setAccessible(true);
     } catch (NoSuchFieldException e) {
       //can be thrown after field renaming
-      throw new RuntimeException("Field 'FILE_PART_SIZE' not found in class SwiftNativeOutputStream", e);
+      throw new RuntimeException("Field 'FILE_PART_SIZE' not found in class " +
+              "SwiftNativeOutputStream", e);
     }
 
-    SwiftNativeOutputStream out = new SwiftNativeOutputStream(getConf(), store, file.toUri().toString());
+    SwiftNativeOutputStream out = new SwiftNativeOutputStream(getConf(), store,
+            file.toUri().toString());
 
     //set default value 1024 bytes instead 4.5Gb
     try {

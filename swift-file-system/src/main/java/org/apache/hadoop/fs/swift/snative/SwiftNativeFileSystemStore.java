@@ -89,7 +89,8 @@ public class SwiftNativeFileSystemStore {
    * @param length      length of the data
    * @throws IOException on a problem
    */
-  public void uploadFile(Path path, InputStream inputStream, long length) throws IOException {
+  public void uploadFile(Path path, InputStream inputStream, long length)
+          throws IOException {
     swiftRestClient.upload(toObjectPath(path), inputStream, length);
   }
 
@@ -102,7 +103,10 @@ public class SwiftNativeFileSystemStore {
    * @param length      length of the data
    * @throws IOException on a problem
    */
-  public void uploadFilePart(Path path, int partNumber, InputStream inputStream, long length) throws IOException {
+  public void uploadFilePart(Path path, int partNumber,
+                             InputStream inputStream, long length)
+          throws IOException {
+
     String stringPath = path.toUri().toString();
     if (stringPath.endsWith("/")) {
       stringPath = stringPath.concat(String.valueOf(partNumber));
@@ -110,7 +114,8 @@ public class SwiftNativeFileSystemStore {
       stringPath = stringPath.concat("/").concat(String.valueOf(partNumber));
     }
 
-    swiftRestClient.upload(new SwiftObjectPath(toDirPath(path).getContainer(), stringPath), inputStream, length);
+    swiftRestClient.upload(new SwiftObjectPath(toDirPath(path).getContainer(), stringPath),
+            inputStream, length);
   }
 
   /**
@@ -217,11 +222,11 @@ public class SwiftNativeFileSystemStore {
    * @return Collection of file statuses
    * @throws IOException IO problems
    */
-  private List<FileStatus> listDirectory(SwiftObjectPath path) throws IOException {
+  private List<FileStatus> listDirectory(SwiftObjectPath path, boolean listDeep) throws IOException {
     final byte[] bytes;
     final ArrayList<FileStatus> files = new ArrayList<FileStatus>();
     try {
-      bytes = swiftRestClient.listDeepObjectsInDirectory(path);
+      bytes = swiftRestClient.listDeepObjectsInDirectory(path, listDeep);
     } catch (FileNotFoundException e) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("" +
@@ -261,7 +266,9 @@ public class SwiftNativeFileSystemStore {
 
     final CollectionType collectionType = JSONUtil.getJsonMapper().getTypeFactory().
             constructCollectionType(List.class, SwiftObjectFileStatus.class);
-    List<SwiftObjectFileStatus> fileStatusList = JSONUtil.toObject(new String(bytes), collectionType);
+
+    final List<SwiftObjectFileStatus> fileStatusList =
+            JSONUtil.toObject(new String(bytes), collectionType);
 
     //this can happen if user lists file /data/files/file
     //in this case swift will return empty array
@@ -276,8 +283,9 @@ public class SwiftNativeFileSystemStore {
 
     for (SwiftObjectFileStatus status : fileStatusList) {
       if (status.getName() != null) {
-          files.add(new SwiftFileStatus(status.getBytes(), status.getBytes() == 0, 1, 0,
-                  status.getLast_modified().getTime(), getCorrectSwiftPath(new Path(status.getName()))));
+          files.add(new SwiftFileStatus(status.getBytes(), status.getBytes() == 0,
+                  1, 0, status.getLast_modified().getTime(),
+                  getCorrectSwiftPath(new Path(status.getName()))));
       }
     }
 
@@ -294,7 +302,7 @@ public class SwiftNativeFileSystemStore {
    */
   public FileStatus[] listSubPaths(Path path) throws IOException {
     final Collection<FileStatus> fileStatuses;
-    fileStatuses = listDirectory(toDirPath(path));
+    fileStatuses = listDirectory(toDirPath(path), false);
     return fileStatuses.toArray(new FileStatus[fileStatuses.size()]);
   }
 
@@ -308,8 +316,9 @@ public class SwiftNativeFileSystemStore {
     innerCreateDirectory(toDirPath(path));
   }
 
-  private void innerCreateDirectory(SwiftObjectPath swiftObjectPath) throws
-          IOException {
+  private void innerCreateDirectory(SwiftObjectPath swiftObjectPath)
+          throws IOException {
+
     swiftRestClient.putRequest(swiftObjectPath);
   }
 
@@ -513,7 +522,7 @@ public class SwiftNativeFileSystemStore {
       SwiftObjectPath targetObjectPath = toObjectPath(targetPath);
 
       //enum the child entries and everything underneath
-      List<FileStatus> fileStatuses = listDirectory(srcObject);
+      List<FileStatus> fileStatuses = listDirectory(srcObject, true);
 
       LOG.info("mv  " + srcObject + " " + targetPath);
 

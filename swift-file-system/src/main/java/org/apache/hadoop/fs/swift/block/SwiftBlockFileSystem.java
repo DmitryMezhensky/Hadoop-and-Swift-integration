@@ -74,7 +74,8 @@ public class SwiftBlockFileSystem extends FileSystem {
       store.initialize(uri, conf);
     }
     store.initialize(uri, conf);
-    this.uri = URI.create(String.format("bswift://%s:%d", uri.getHost(), uri.getPort()));
+    this.uri = URI.create(String.format("bswift://%s:%d",
+            uri.getHost(), uri.getPort()));
     this.workingDir = new Path("/user", System.getProperty("user.name")).
             makeQualified(uri, new Path(System.getProperty("user.name")));
   }
@@ -107,7 +108,9 @@ public class SwiftBlockFileSystem extends FileSystem {
    * @param permission Currently ignored.
    */
   @Override
-  public boolean mkdirs(Path path, FsPermission permission) throws IOException {
+  public boolean mkdirs(Path path, FsPermission permission)
+          throws IOException {
+
     Path absolutePath = makeAbsolute(path);
     List<Path> paths = new ArrayList<Path>();
     do {
@@ -141,7 +144,8 @@ public class SwiftBlockFileSystem extends FileSystem {
       return new FileStatus[]{};
     }
     if (inode.isFile()) {
-      return new FileStatus[]{getFileStatus(f.makeQualified(uri, workingDir), inode)
+      return new FileStatus[]{getFileStatus(
+              f.makeQualified(uri, workingDir), inode)
       };
     }
     ArrayList<FileStatus> ret = new ArrayList<FileStatus>();
@@ -186,7 +190,8 @@ public class SwiftBlockFileSystem extends FileSystem {
    * This operation is not supported yet.
    */
   public FSDataOutputStream append(Path f, int bufferSize,
-                                   Progressable progress) throws IOException {
+                                   Progressable progress)
+          throws IOException {
     throw new IOException("Not supported");
   }
 
@@ -196,7 +201,8 @@ public class SwiftBlockFileSystem extends FileSystem {
   @Override
   public FSDataOutputStream create(Path file, FsPermission permission,
                                    boolean overwrite, int bufferSize,
-                                   short replication, long blockSize, Progressable progress)
+                                   short replication, long blockSize,
+                                   Progressable progress)
           throws IOException {
     INode inode = store.retrieveINode(makeAbsolute(file));
     if (inode != null) {
@@ -222,7 +228,8 @@ public class SwiftBlockFileSystem extends FileSystem {
   @Override
   public FSDataInputStream open(Path path, int bufferSize) throws IOException {
     INode inode = checkFile(path);
-    return new FSDataInputStream(new SwiftBlockInputStream(store, inode, statistics));
+    return new FSDataInputStream(
+            new SwiftBlockInputStream(store, inode, statistics));
   }
 
   @Override
@@ -328,7 +335,9 @@ public class SwiftBlockFileSystem extends FileSystem {
   }
 
   @Override
-  public BlockLocation[] getFileBlockLocations(FileStatus file, long start, long len) throws IOException {
+  public BlockLocation[] getFileBlockLocations(FileStatus file,
+                                               long start, long len)
+          throws IOException {
     final INode iNode = store.retrieveINode(file.getPath());
     final BlockLocation[] blockLocations = new BlockLocation[iNode.getBlocks().length];
 
@@ -336,7 +345,9 @@ public class SwiftBlockFileSystem extends FileSystem {
     long offset = 0l;
     for (Block block : iNode.getBlocks()) {
       final List<URI> locations =
-              store.getObjectLocation(new Path(new SwiftObjectPath(uri.getHost(), String.valueOf(block.getId())).toString()));
+              store.getObjectLocation(new Path(
+                      new SwiftObjectPath(uri.getHost(),
+                              String.valueOf(block.getId())).toString()));
       final String[] names = new String[locations.size()];
       final String[] hosts = new String[locations.size()];
       int i = 0;
@@ -345,10 +356,12 @@ public class SwiftBlockFileSystem extends FileSystem {
         names[i] = uri.getAuthority();
         i++;
       }
-      blockLocations[idx++] = new BlockLocation(names, hosts, offset, block.getLength());
+      blockLocations[idx++] =
+              new BlockLocation(names, hosts, offset, block.getLength());
       offset += block.getLength();
       LOG.debug("block location: " + Arrays.toString(names) +
-              " hosts  " + Arrays.toString(hosts) + " : length: " + block.getLength());
+              " hosts  " + Arrays.toString(hosts) +
+              " : length: " + block.getLength());
     }
 
     return blockLocations;
@@ -383,7 +396,8 @@ public class SwiftBlockFileSystem extends FileSystem {
   }
 
   private Path getCorrectSwiftPath(Path path) throws URISyntaxException {
-    final URI fullUri = new URI(uri.getScheme(), uri.getAuthority(), path.toUri().getPath(), null, null);
+    final URI fullUri = new URI(uri.getScheme(), uri.getAuthority(),
+            path.toUri().getPath(), null, null);
 
     return new Path(fullUri);
   }

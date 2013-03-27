@@ -80,7 +80,8 @@ public class PasswordCredentials {
   public String toString() {
     return "PasswordCredentials :" +
             "username='" + username + '\'' +
-            ", password len='" + ((password == null) ? -1 : password.length()) + '\'';
+            ", password len='" +
+            ((password == null) ? -1 : password.length()) + '\'';
   }
 }
 

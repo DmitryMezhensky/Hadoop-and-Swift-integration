@@ -212,21 +212,27 @@ public final class SwiftRestClient {
     }
   }
 
-  private static abstract class GetMethodProcessor<R> extends HttpMethodProcessor<GetMethod, R> {
+  private static abstract class GetMethodProcessor<R>
+          extends HttpMethodProcessor<GetMethod, R> {
+
     @Override
     protected final GetMethod doCreateMethod(String uri) {
       return new GetMethod(uri);
     }
   }
 
-  private static abstract class PostMethodProcessor<R> extends HttpMethodProcessor<PostMethod, R> {
+  private static abstract class PostMethodProcessor<R>
+          extends HttpMethodProcessor<PostMethod, R> {
+
     @Override
     protected final PostMethod doCreateMethod(String uri) {
       return new PostMethod(uri);
     }
   }
 
-  private static abstract class PutMethodProcessor<R> extends HttpMethodProcessor<PutMethod, R> {
+  private static abstract class PutMethodProcessor<R>
+          extends HttpMethodProcessor<PutMethod, R> {
+
     @Override
     protected final PutMethod doCreateMethod(String uri) {
       return new PutMethod(uri);
@@ -252,7 +258,9 @@ public final class SwiftRestClient {
    *
    * @param <R>
    */
-  private static abstract class CopyMethodProcessor<R> extends HttpMethodProcessor<CopyMethod, R> {
+  private static abstract class CopyMethodProcessor<R>
+          extends HttpMethodProcessor<CopyMethod, R> {
+
     @Override
     protected final CopyMethod doCreateMethod(String uri) {
       return new CopyMethod(uri);
@@ -270,7 +278,9 @@ public final class SwiftRestClient {
    *
    * @param <R>
    */
-  private static abstract class DeleteMethodProcessor<R> extends HttpMethodProcessor<DeleteMethod, R> {
+  private static abstract class DeleteMethodProcessor<R>
+          extends HttpMethodProcessor<DeleteMethod, R> {
+
     @Override
     protected final DeleteMethod doCreateMethod(String uri) {
       return new DeleteMethod(uri);
@@ -287,7 +297,9 @@ public final class SwiftRestClient {
     }
   }
 
-  private static abstract class HeadMethodProcessor<R> extends HttpMethodProcessor<HeadMethod, R> {
+  private static abstract class HeadMethodProcessor<R>
+          extends HttpMethodProcessor<HeadMethod, R> {
+
     @Override
     protected final HeadMethod doCreateMethod(String uri) {
       return new HeadMethod(uri);
@@ -480,8 +492,8 @@ public final class SwiftRestClient {
    * @return byte[] file data or null if the object was not found
    * @throws IOException on IO Faults
    */
-  public byte[] getObjectLocation(SwiftObjectPath path,
-                                  final Header... requestHeaders) throws IOException {
+  public byte[] getObjectLocation(SwiftObjectPath path, final Header... requestHeaders)
+          throws IOException {
     preRemoteCommand("getObjectLocation");
     try {
       return perform(pathToObjectLocation(path),
@@ -490,13 +502,14 @@ public final class SwiftRestClient {
                 public byte[] extractResult(GetMethod method) throws
                         IOException {
 
-                  //TODO: remove SC_NO_CONTENT if it depends on Swift versions
-                  if (method.getStatusCode() == SC_NOT_FOUND || method.getStatusCode() == SC_FORBIDDEN ||
+                  if (method.getStatusCode() == SC_NOT_FOUND ||
+                          method.getStatusCode() == SC_FORBIDDEN ||
                           method.getStatusCode() == SC_NO_CONTENT ||
                           method.getResponseBodyAsStream() == null) {
                     return null;
                   }
-                  final InputStream responseBodyAsStream = method.getResponseBodyAsStream();
+                  final InputStream responseBodyAsStream =
+                          method.getResponseBodyAsStream();
                   final byte[] locationData = new byte[1024];
 
                   return responseBodyAsStream.read(locationData) > 0 ? locationData : null;
@@ -539,8 +552,9 @@ public final class SwiftRestClient {
    * @throws FileNotFoundException if nothing is at the end of the URI -that is,
    *                               the directory is empty
    */
-  public byte[] findObjectsByPrefix(SwiftObjectPath path,
-                                    final Header... requestHeaders) throws IOException {
+  public byte[] findObjectsByPrefix(SwiftObjectPath path, final Header... requestHeaders)
+          throws IOException {
+
     preRemoteCommand("findObjectsByPrefix");
     URI uri;
     String dataLocationURI = getEndpointURI().toString();
@@ -554,7 +568,7 @@ public final class SwiftRestClient {
               .concat(path.getContainer())
               .concat("/?prefix=")
               .concat(object)
-//                                       .concat("&delimiter=/")
+ //             .concat("&delimiter=/")
       ;
       uri = new URI(dataLocationURI);
     } catch (URISyntaxException e) {
@@ -596,8 +610,10 @@ public final class SwiftRestClient {
    * @throws FileNotFoundException if nothing is at the end of the URI -that is,
    *                               the directory is empty
    */
-  public byte[] listDeepObjectsInDirectory(SwiftObjectPath path,
-                                       final Header... requestHeaders) throws IOException {
+  public byte[] listDeepObjectsInDirectory(SwiftObjectPath path, boolean listDeep,
+                                       final Header... requestHeaders)
+          throws IOException {
+
     preRemoteCommand("listObjectsInPath");
 
     String endpoint = getEndpointURI().toString();
@@ -619,14 +635,18 @@ public final class SwiftRestClient {
             .append(path.getContainer())
             .append("/?prefix=")
             .append(object)
-            //.append("&delimiter=/")
             .append("&format=json");
+
+    //in listing deep set param to false
+    if (listDeep == false) {
+        dataLocationURI.append("&delimiter=/");
+    }
 
     return findObjects(dataLocationURI.toString(), requestHeaders);
   }
 
-  private byte[] findObjects(String location, final Header[] requestHeaders) throws
-          IOException {
+  private byte[] findObjects(String location, final Header[] requestHeaders)
+          throws IOException {
     URI uri;
     preRemoteCommand("findObjects");
     try {
@@ -671,8 +691,9 @@ public final class SwiftRestClient {
    * @return true if the status code was considered successful
    * @throws IOException on IO Faults
    */
-  public boolean copyObject(SwiftObjectPath src, final SwiftObjectPath dst, final Header... headers)
-          throws IOException {
+  public boolean copyObject(SwiftObjectPath src, final SwiftObjectPath dst,
+                            final Header... headers) throws IOException {
+
     preRemoteCommand("copyObject");
 
     return perform(pathToURI(src), new CopyMethodProcessor<Boolean>() {
@@ -727,7 +748,9 @@ public final class SwiftRestClient {
    * @param requestHeaders http headers
    * @throws IOException on IO Faults
    */
-  public boolean delete(SwiftObjectPath path, final Header... requestHeaders) throws IOException {
+  public boolean delete(SwiftObjectPath path, final Header... requestHeaders)
+          throws IOException {
+
     preRemoteCommand("delete");
 
     return perform(pathToURI(path), new DeleteMethodProcessor<Boolean>() {
@@ -752,7 +775,9 @@ public final class SwiftRestClient {
    * @throws IOException           IO problems
    * @throws FileNotFoundException if there is nothing at the end
    */
-  public Header[] headRequest(SwiftObjectPath path, final Header... requestHeaders) throws IOException {
+  public Header[] headRequest(SwiftObjectPath path, final Header... requestHeaders)
+          throws IOException {
+
     preRemoteCommand("headRequest");
     return perform(pathToURI(path), new HeadMethodProcessor<Header[]>() {
       @Override
@@ -771,7 +796,9 @@ public final class SwiftRestClient {
     });
   }
 
-  public int putRequest(SwiftObjectPath path, final Header... requestHeaders) throws IOException {
+  public int putRequest(SwiftObjectPath path, final Header... requestHeaders)
+          throws IOException {
+
     preRemoteCommand("putRequest");
     return perform(pathToURI(path), new PutMethodProcessor<Integer>() {
 
@@ -1025,7 +1052,9 @@ public final class SwiftRestClient {
    * @param <R>       result type
    * @return result of HTTP request
    */
-  private <M extends HttpMethod, R> R perform(URI uri, HttpMethodProcessor<M, R> processor) throws IOException {
+  private <M extends HttpMethod, R> R perform(URI uri, HttpMethodProcessor<M, R> processor)
+          throws IOException {
+
     checkNotNull(uri);
     checkNotNull(processor);
 
@@ -1120,7 +1149,9 @@ public final class SwiftRestClient {
    * @return the input stream. This must be closed to avoid log errors
    * @throws IOException
    */
-  private InputStream doGet(final URI uri, final Header... requestHeaders) throws IOException {
+  private InputStream doGet(final URI uri, final Header... requestHeaders)
+          throws IOException {
+
     return perform(uri, new GetMethodProcessor<InputStream>() {
       @Override
       public InputStream extractResult(GetMethod method) throws IOException {
@@ -1250,7 +1281,8 @@ public final class SwiftRestClient {
   private <M extends HttpMethod> int exec(M method) throws IOException {
     final HttpClient client = new HttpClient();
     if (proxyHost != null) {
-      client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, new HttpHost(proxyHost, proxyPort));
+      client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY,
+              new HttpHost(proxyHost, proxyPort));
     }
 
     int statusCode = execWithDebugOutput(method, client);

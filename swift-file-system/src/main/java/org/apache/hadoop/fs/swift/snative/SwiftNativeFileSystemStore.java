@@ -273,7 +273,8 @@ public class SwiftNativeFileSystemStore {
     //this can happen if user lists file /data/files/file
     //in this case swift will return empty array
     if (fileStatusList.isEmpty()) {
-      final FileStatus objectMetadata = getObjectMetadata(getCorrectSwiftPath(path));
+      final SwiftFileStatus objectMetadata =
+              (SwiftFileStatus) getObjectMetadata(getCorrectSwiftPath(path));
       if (objectMetadata.isFile()) {
         files.add(objectMetadata);
       }

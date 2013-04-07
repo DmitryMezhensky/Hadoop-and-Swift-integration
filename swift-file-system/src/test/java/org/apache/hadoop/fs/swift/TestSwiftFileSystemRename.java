@@ -27,10 +27,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
 
 
@@ -197,7 +193,6 @@ public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
     rename(filePath, newFilePath, true, false, true);
     byte[] dest = readDataset(fs, newFilePath, len);
     compareByteArrays(dataset, dest, len);
-    String reread = readBytesToString(fs, newFilePath, 20);
   }
 
 
@@ -243,7 +238,6 @@ public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
     SwiftTestUtils.writeAndRead(fs, filePath, dataset2, len, len, false, true);
     byte[] dest = readDataset(fs, newFilePath, len);
     compareByteArrays(dataset, dest, len);
-    String reread = readBytesToString(fs, newFilePath, 20);
   }
 
   @Test

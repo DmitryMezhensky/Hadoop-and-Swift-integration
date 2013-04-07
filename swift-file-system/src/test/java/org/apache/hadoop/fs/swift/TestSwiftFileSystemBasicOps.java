@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.swift.exceptions.SwiftBadRequestException;
 import org.apache.hadoop.fs.swift.exceptions.SwiftException;
+import org.apache.hadoop.fs.swift.snative.SwiftFileStatus;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem;
 import org.junit.Before;
 import org.junit.Test;
@@ -262,7 +263,7 @@ public class TestSwiftFileSystemBasicOps {
       String text = "Testing File Status "
               + System.currentTimeMillis();
       writeTextFile(fs, path, text, false);
-      FileStatus fileStatus = fs.getFileStatus(path);
+      SwiftFileStatus fileStatus = (SwiftFileStatus) fs.getFileStatus(path);
       assertTrue("Not a file: " + fileStatus, fileStatus.isFile());
       assertFalse("A dir: " + fileStatus, fileStatus.isDir());
     } finally {

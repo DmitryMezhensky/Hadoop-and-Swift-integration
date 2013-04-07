@@ -638,7 +638,7 @@ public final class SwiftRestClient {
             .append("&format=json");
 
     //in listing deep set param to false
-    if (listDeep == false) {
+    if (listDeep) {
         dataLocationURI.append("&delimiter=/");
     }
 

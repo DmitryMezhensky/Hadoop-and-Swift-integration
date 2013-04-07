@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException;
+import org.apache.hadoop.fs.swift.snative.SwiftFileStatus;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem;
 import org.junit.internal.AssumptionViolatedException;
 
@@ -358,7 +359,7 @@ public class SwiftTestUtils {
    */
   public static void assertIsDirectory(SwiftNativeFileSystem fs,
                                        Path path) throws IOException {
-    FileStatus fileStatus = fs.getFileStatus(path);
+    SwiftFileStatus fileStatus = (SwiftFileStatus) fs.getFileStatus(path);
     assertFalse("Should be a dir, but is a file: " + fileStatus,
             fileStatus.isFile());
     assertTrue("Should be a dir -but isn't: " + fileStatus,
@@ -477,7 +478,7 @@ public class SwiftTestUtils {
   static void assertIsFile(FileSystem fileSystem, Path filename) throws
           IOException {
     assertPathExists(fileSystem, "Expected file", filename);
-    FileStatus status = fileSystem.getFileStatus(filename);
+    SwiftFileStatus status = (SwiftFileStatus) fileSystem.getFileStatus(filename);
     String fileInfo = filename + "  " + status;
     assertTrue("Not a file " + fileInfo, status.isFile());
     assertFalse("File claims to be a symlink " + fileInfo,

@@ -19,12 +19,15 @@
 package org.apache.hadoop.fs.swift;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.swift.util.SwiftTestUtils;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
-
+/**
+ * Test deletion operations
+ */
 public class TestSwiftFileSystemDelete extends SwiftFileSystemBaseTest {
 
   @Test
@@ -42,7 +45,12 @@ public class TestSwiftFileSystemDelete extends SwiftFileSystemBaseTest {
     assertDeleted(file, true);
   }
 
-  //@Test
+
+  /**
+   * Test recursive root directory deletion fails if there is an entry underneath
+   * @throws Throwable
+   */
+  @Test
   public void testRmRootDirRecursiveIsForbidden() throws Throwable {
     Path root = path("/");
     Path testFile = path("/test");

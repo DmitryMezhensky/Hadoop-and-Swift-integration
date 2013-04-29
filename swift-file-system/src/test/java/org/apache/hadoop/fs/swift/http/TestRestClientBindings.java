@@ -28,7 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
-import static org.apache.hadoop.fs.swift.SwiftTestUtils.assertPropertyEquals;
+import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.assertPropertyEquals;
 import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
 
 public class TestRestClientBindings extends Assert {
@@ -85,19 +85,36 @@ public class TestRestClientBindings extends Assert {
     assertPropertyEquals(props, SWIFT_HTTPS_PORT_PROPERTY, null);
   }
 
-  @Test(expected = SwiftConfigurationException.class)
+
+  public void expectBindingFailure(URI fsURI, Configuration config) {
+    try {
+      Properties binding = RestClientBindings.bind(fsURI, config);
+      //if we get here, binding didn't fail- there is something else.
+      //list the properties but not the values.
+      StringBuilder details = new StringBuilder() ;
+      for (Object key: binding.keySet()) {
+        details.append(key.toString()).append(" ");
+      }
+      fail("Expected a failure, got the binding [ "+ details+"]");
+    } catch (SwiftConfigurationException expected) {
+
+    }
+  }
+
+  @Test
   public void testBindAgainstConfMissingInstance() throws Exception {
     Configuration badConf = new Configuration();
-    RestClientBindings.bind(filesysURI, badConf);
+    expectBindingFailure(filesysURI, badConf);
   }
 
 
-  @Test(expected = SwiftConfigurationException.class)
+/* Hadoop 2.x+ only, as conf.unset() isn't a v1 feature
   public void testBindAgainstConfIncompleteInstance() throws Exception {
     String instance = RestClientBindings.buildSwiftInstancePrefix(SERVICE);
     conf.unset(instance + DOT_PASSWORD);
-    RestClientBindings.bind(filesysURI, conf);
+    expectBindingFailure(filesysURI, conf);
   }
+*/
 
   @Test(expected = SwiftConfigurationException.class)
   public void testDottedServiceURL() throws Exception {

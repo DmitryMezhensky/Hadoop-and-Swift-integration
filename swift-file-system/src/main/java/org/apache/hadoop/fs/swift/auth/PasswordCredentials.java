@@ -78,10 +78,8 @@ public class PasswordCredentials {
 
   @Override
   public String toString() {
-    return "PasswordCredentials :" +
-            "username='" + username + '\'' +
-            ", password len='" +
-            ((password == null) ? -1 : password.length()) + '\'';
+    return "user '" + username + '\'' +
+            " with password of length " + ((password == null) ? 0 : password.length());
   }
 }
 

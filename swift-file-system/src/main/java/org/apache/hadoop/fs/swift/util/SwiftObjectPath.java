@@ -120,6 +120,27 @@ public final class SwiftObjectPath {
   }
 
   /**
+   * Query to see if the possibleChild object is a child path of this.
+   * object.
+   *
+   * The test is done by probing for the path of the this object being
+   * at the start of the second -with a trailing slash, and both
+   * containers being equal
+   *
+   * @param possibleChild possible child dir
+   * @return true iff the possibleChild is under this object
+   */
+  public boolean isEqualToOrParentOf(SwiftObjectPath possibleChild) {
+    String origPath = toUriPath();
+    String path = origPath;
+    if (!path.endsWith("/")) {
+      path = path + "/";
+    }
+    String childPath = possibleChild.toUriPath();
+    return childPath.equals(origPath) || childPath.startsWith(path);
+  }
+
+  /**
    * Create a path tuple of (container, path), where the container is
    * chosen from the host of the URI.
    * A trailing slash can be added to the path. This is the point where

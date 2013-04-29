@@ -135,6 +135,16 @@ public class SwiftNativeFileSystem extends FileSystem {
   }
 
   /**
+   *
+   * Operation class with Swift Blob Store
+   *
+   * @return SwiftNativeFileSystemStore
+   */
+  public SwiftNativeFileSystemStore getStore() {
+    return store;
+  }
+
+  /**
    * Return a file status object that represents the path.
    *
    * @param f The path we want information from

@@ -24,6 +24,8 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.http.RestClientBindings;
+import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem;
+import org.apache.hadoop.fs.swift.util.SwiftTestUtils;
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
@@ -31,11 +33,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 public class TestSwiftFileSystemExtendedContract extends SwiftFileSystemBaseTest {
 
@@ -48,13 +45,13 @@ public class TestSwiftFileSystemExtendedContract extends SwiftFileSystemBaseTest
       in.close();
       fail("didn't expect to get here");
     } catch (FileNotFoundException fnfe) {
-      LOG.info("This is expected.", fnfe);
+      LOG.debug("Expected: " + fnfe, fnfe);
     }
   }
 
 
   @Test
-  public void testHasURI() throws Throwable {
+  public void testFilesystemHasURI() throws Throwable {
     assertNotNull(fs.getUri());
   }
 
@@ -90,16 +87,15 @@ public class TestSwiftFileSystemExtendedContract extends SwiftFileSystemBaseTest
   @Test
   public void testConfDefinesFilesystem() throws Throwable {
     Configuration conf = new Configuration();
-    URI fsURI = SwiftTestUtils.getServiceURI(conf);
+    SwiftTestUtils.getServiceURI(conf);
   }
 
   @Test
   public void testConfIsValid() throws Throwable {
     Configuration conf = new Configuration();
     URI fsURI = SwiftTestUtils.getServiceURI(conf);
-    Properties properties = RestClientBindings.bind(fsURI, conf);
+    RestClientBindings.bind(fsURI, conf);
   }
-
 
   /**
    * Assert that a filesystem is case sensitive.

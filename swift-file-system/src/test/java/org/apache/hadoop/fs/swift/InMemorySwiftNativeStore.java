@@ -25,6 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.exceptions.SwiftOperationFailedException;
+import org.apache.hadoop.fs.swift.snative.SwiftFileStatus;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystemStore;
 
 import java.io.ByteArrayInputStream;
@@ -76,12 +77,12 @@ public class InMemorySwiftNativeStore extends SwiftNativeFileSystemStore {
   }
 
   @Override
-  public FileStatus getObjectMetadata(Path path) throws IOException {
+  public SwiftFileStatus getObjectMetadata(Path path) throws IOException {
     FileStatus status = metadataMap.get(path.toUri().toString());
     if (status == null) {
       throw new FileNotFoundException("Not found " + path.toUri());
     }
-    return status;
+    return (SwiftFileStatus) status;
   }
 
   @Override

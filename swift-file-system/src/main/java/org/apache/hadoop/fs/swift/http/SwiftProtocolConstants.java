@@ -67,6 +67,17 @@ public class SwiftProtocolConstants {
           FS_SWIFT + "connect.retry.count";
 
   /**
+   * blocksize for all filesystems: {@value}
+   */
+  public static final String SWIFT_BLOCKSIZE =
+          FS_SWIFT + "blocksize";
+
+  /**
+   * the default blocksize for filesystems: {@value}
+   */
+  public static final long DEFAULT_SWIFT_BLOCKSIZE = 32 * 1024 * 1024;
+
+  /**
    * Key for passing the service name as a property -not read from the
    * configuration : {@value}
    */
@@ -87,6 +98,10 @@ public class SwiftProtocolConstants {
   public static final String DOT_REGION = ".region";
   public static final String DOT_PROXY_HOST = ".proxy.host";
   public static final String DOT_PROXY_PORT = ".proxy.port";
+  public static final String DOT_LOCATION_AWARE = ".location-aware";
+  public static final String DOT_APIKEY = ".apikey";
+  public static final String DOT_USE_APIKEY = ".useApikey";
+
   /**
    * flag to say use public URL
    */
@@ -100,10 +115,16 @@ public class SwiftProtocolConstants {
   public static final String SWIFT_USERNAME_PROPERTY = FS_SWIFT + DOT_USERNAME;
   public static final String SWIFT_PASSWORD_PROPERTY = FS_SWIFT + DOT_PASSWORD;
   public static final String SWIFT_HTTP_PORT_PROPERTY = FS_SWIFT + DOT_HTTP_PORT;
+  public static final String SWIFT_APIKEY_PROPERTY = FS_SWIFT + DOT_APIKEY;
   public static final String SWIFT_HTTPS_PORT_PROPERTY = FS_SWIFT
           + DOT_HTTPS_PORT;
   public static final String SWIFT_REGION_PROPERTY = FS_SWIFT + DOT_REGION;
   public static final String SWIFT_PUBLIC_PROPERTY = FS_SWIFT + DOT_PUBLIC;
+
+  public static final String SWIFT_USE_API_KEY_PROPERTY = FS_SWIFT + DOT_USE_APIKEY;
+
+  public static final String SWIFT_LOCATION_AWARE_PROPERTY = FS_SWIFT +
+            DOT_LOCATION_AWARE;
 
   public static final String SWIFT_PROXY_HOST_PROPERTY = FS_SWIFT + DOT_PROXY_HOST;
   public static final String SWIFT_PROXY_PORT_PROPERTY = FS_SWIFT + DOT_PROXY_PORT;

@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.fs.swift;
 
-import static org.apache.hadoop.fs.swift.SwiftTestUtils.*;
-
+import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.*;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.swift.util.SwiftTestUtils;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -71,9 +71,10 @@ public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
     assertTrue(fs.exists(old));
     rename(old, newPath, true, false, true);
 
-    final FSDataInputStream open = fs.open(newPath);
+    final FSDataInputStream bobStream = fs.open(newPath);
     final byte[] bytes = new byte[512];
-    final int read = open.read(bytes);
+    final int read = bobStream.read(bytes);
+    bobStream.close();
     final byte[] buffer = new byte[read];
     System.arraycopy(bytes, 0, buffer, 0, read);
     assertEquals(new String(message), new String(buffer));
@@ -117,7 +118,6 @@ public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
     assertExists("Renamed nested file1", path("/test/new/newdir/dir/file1"));
     assertPathDoesNotExist("Nested file1 should have been deleted",
             path("/test/olddir/dir/file1"));
-
     assertExists("Renamed nested subdir",
             path("/test/new/newdir/dir/subdir/"));
     assertExists("file under subdir",
@@ -193,6 +193,7 @@ public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
     rename(filePath, newFilePath, true, false, true);
     byte[] dest = readDataset(fs, newFilePath, len);
     compareByteArrays(dataset, dest, len);
+    String reread = readBytesToString(fs, newFilePath, 20);
   }
 
 
@@ -205,6 +206,19 @@ public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
     rename(filepath, filepath, true, true, true);
     //verify the file is still there
     assertIsFile(filepath);
+  }
+
+  @Test
+  public void testMoveDirUnderParent() throws Throwable {
+    if (!renameSupported()) {
+      return;
+    }
+    Path testdir = path("test/dir");
+    fs.mkdirs(testdir);
+    Path parent = testdir.getParent();
+    //the outcome here is ambiguous, so is not checked
+    fs.rename(testdir, parent);
+    assertExists("Source directory has been deleted ", testdir);
   }
 
   /**
@@ -238,6 +252,7 @@ public class TestSwiftFileSystemRename extends SwiftFileSystemBaseTest {
     SwiftTestUtils.writeAndRead(fs, filePath, dataset2, len, len, false, true);
     byte[] dest = readDataset(fs, newFilePath, len);
     compareByteArrays(dataset, dest, len);
+    String reread = readBytesToString(fs, newFilePath, 20);
   }
 
   @Test

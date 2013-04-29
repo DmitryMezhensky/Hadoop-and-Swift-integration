@@ -29,7 +29,7 @@ public class AuthenticationRequestWrapper {
   private AuthenticationRequest auth;
 
   /**
-   * defalt constructor used for json parsing
+   * default constructor used for json parsing
    */
   public AuthenticationRequestWrapper() {
   }

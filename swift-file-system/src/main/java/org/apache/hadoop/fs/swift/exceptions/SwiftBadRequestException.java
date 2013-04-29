@@ -18,14 +18,32 @@
 
 package org.apache.hadoop.fs.swift.exceptions;
 
+import org.apache.commons.httpclient.HttpMethod;
+
+import java.net.URI;
+
 /**
  * Thrown to indicate that data locality can't be calculated or requested path is incorrect.
  * Data locality can't be calculated if Openstack Swift version is old.
  */
-public class SwiftBadRequestException extends SwiftException {
+public class SwiftBadRequestException extends SwiftInvalidResponseException {
 
-  public SwiftBadRequestException(String message) {
-    super(message);
+  public SwiftBadRequestException(String message,
+                                  String operation,
+                                  URI uri,
+                                  HttpMethod method) {
+    super(message, operation, uri, method);
   }
 
+  public SwiftBadRequestException(String message,
+                                  int statusCode,
+                                  String operation,
+                                  URI uri) {
+    super(message, statusCode, operation, uri);
+  }
+
+  @Override
+  public String exceptionTitle() {
+    return "BadRequest";
+  }
 }

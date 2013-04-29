@@ -146,7 +146,9 @@ public final class RestClientBindings {
     props.setProperty(SWIFT_CONTAINER_PROPERTY, container);
     copy(conf, prefix + DOT_AUTH_URL, props, SWIFT_AUTH_PROPERTY, true);
     copy(conf, prefix + DOT_USERNAME, props, SWIFT_USERNAME_PROPERTY, true);
-    copy(conf, prefix + DOT_PASSWORD, props, SWIFT_PASSWORD_PROPERTY, true);
+    copy(conf, prefix + DOT_APIKEY, props, SWIFT_APIKEY_PROPERTY, false);
+    copy(conf, prefix + DOT_PASSWORD, props, SWIFT_PASSWORD_PROPERTY,
+            props.contains(SWIFT_APIKEY_PROPERTY) ? true : false);
     copy(conf, prefix + DOT_TENANT, props, SWIFT_TENANT_PROPERTY, false);
     copy(conf, prefix + DOT_REGION, props, SWIFT_REGION_PROPERTY, false);
     copy(conf, prefix + DOT_HTTP_PORT, props, SWIFT_HTTP_PORT_PROPERTY, false);

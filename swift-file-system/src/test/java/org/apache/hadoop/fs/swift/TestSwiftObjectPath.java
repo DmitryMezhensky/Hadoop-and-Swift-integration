@@ -17,18 +17,20 @@
  */
 package org.apache.hadoop.fs.swift;
 
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.http.RestClientBindings;
 import org.apache.hadoop.fs.swift.http.SwiftRestClient;
 import org.apache.hadoop.fs.swift.util.SwiftObjectPath;
+import org.apache.hadoop.fs.swift.util.SwiftUtils;
 import org.junit.Test;
 
 import java.net.URI;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for SwiftObjectPath class.
@@ -71,8 +73,7 @@ public class TestSwiftObjectPath {
 
   @Test
   public void testParseAuthenticatedUrl() throws Exception {
-    final String pathString =
-            "swift://container.service1/v2/AUTH_00345h34l93459y4/home/tom/documents/finance.docx";
+    final String pathString = "swift://container.service1/v2/AUTH_00345h34l93459y4/home/tom/documents/finance.docx";
     final URI uri = new URI(pathString);
     final Path path = new Path(pathString);
     final SwiftObjectPath expected = SwiftObjectPath.fromPath(uri, path);
@@ -95,4 +96,66 @@ public class TestSwiftObjectPath {
     LOG.info("Merged URI=" + uri);
   }
 
+  @Test
+  public void testRootDirProbeEmptyPath() throws Throwable {
+    SwiftObjectPath object=new SwiftObjectPath("container","");
+    assertTrue(SwiftUtils.isRootDir(object));
+  }
+
+  @Test
+  public void testRootDirProbeRootPath() throws Throwable {
+    SwiftObjectPath object=new SwiftObjectPath("container","/");
+    assertTrue(SwiftUtils.isRootDir(object));
+  }
+
+  private void assertParentOf(SwiftObjectPath p1, SwiftObjectPath p2) {
+    assertTrue(p1.toString() + " is not a parent of " + p2 ,p1.isEqualToOrParentOf(
+      p2));
+  }
+
+  private void assertNotParentOf(SwiftObjectPath p1, SwiftObjectPath p2) {
+    assertFalse(p1.toString() + " is a parent of " + p2, p1.isEqualToOrParentOf(
+      p2));
+  }
+
+  @Test
+  public void testChildOfProbe() throws Throwable {
+    SwiftObjectPath parent = new SwiftObjectPath("container",
+                                                 "/parent");
+    SwiftObjectPath parent2 = new SwiftObjectPath("container",
+                                                 "/parent2");
+    SwiftObjectPath child = new SwiftObjectPath("container",
+                                                 "/parent/child");
+    SwiftObjectPath sibling = new SwiftObjectPath("container",
+                                                 "/parent/sibling");
+    SwiftObjectPath grandchild = new SwiftObjectPath("container",
+                                                     "/parent/child/grandchild");
+    assertParentOf(parent, child);
+    assertParentOf(parent, grandchild);
+    assertParentOf(child, grandchild);
+    assertParentOf(parent, parent);
+    assertNotParentOf(child, parent);
+    assertParentOf(child, child);
+    assertNotParentOf(parent, parent2);
+    assertNotParentOf(grandchild, parent);
+  }
+
+  @Test
+  public void testChildOfRoot() throws Throwable {
+    SwiftObjectPath root = new SwiftObjectPath("container", "/");
+    SwiftObjectPath child = new SwiftObjectPath("container", "child");
+    SwiftObjectPath grandchild = new SwiftObjectPath("container",
+                                                     "/child/grandchild");
+    assertParentOf(root, child);
+    assertParentOf(root, grandchild);
+    assertParentOf(child, grandchild);
+    assertParentOf(root, root);
+    assertNotParentOf(child, root);
+    assertParentOf(child, child);
+    assertNotParentOf(grandchild, root);
+  }
+
+
+
+  
 }

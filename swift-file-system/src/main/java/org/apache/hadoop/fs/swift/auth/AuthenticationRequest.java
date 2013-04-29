@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,24 +23,13 @@ package org.apache.hadoop.fs.swift.auth;
  * Contains basic authentication information.
  */
 public class AuthenticationRequest {
+
   /**
    * tenant name
    */
-  private String tenantName;
+  protected String tenantName;
 
-  /**
-   * Credentials for login
-   */
-  private PasswordCredentials passwordCredentials;
-
-  /**
-   * @param tenantName
-   * @param passwordCredentials
-   */
-  public AuthenticationRequest(String tenantName,
-                               PasswordCredentials passwordCredentials) {
-    this.tenantName = tenantName;
-    this.passwordCredentials = passwordCredentials;
+  public AuthenticationRequest() {
   }
 
   /**
@@ -57,25 +46,4 @@ public class AuthenticationRequest {
     this.tenantName = tenantName;
   }
 
-  /**
-   * @return credentials for login into Keystone
-   */
-  public PasswordCredentials getPasswordCredentials() {
-    return passwordCredentials;
-  }
-
-  /**
-   * @param passwordCredentials credentials for login into Keystone
-   */
-  public void setPasswordCredentials(PasswordCredentials passwordCredentials) {
-    this.passwordCredentials = passwordCredentials;
-  }
-
-  @Override
-  public String toString() {
-    return "AuthenticationRequest{" +
-            "tenantName='" + tenantName + '\'' +
-            ", passwordCredentials=" + passwordCredentials +
-            '}';
-  }
 }

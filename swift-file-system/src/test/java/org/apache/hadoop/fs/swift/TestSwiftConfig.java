@@ -28,7 +28,7 @@ import java.net.URISyntaxException;
 import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
 
 /**
- *
+ * Test the swift service-specific configuration binding features
  */
 public class TestSwiftConfig {
 
@@ -90,6 +90,27 @@ public class TestSwiftConfig {
   public void testBadConnectTimeout() throws Exception {
     final Configuration configuration = createCoreConfig();
     configuration.set(SWIFT_CONNECTION_TIMEOUT, "three");
+    mkInstance(configuration);
+  }
+
+  @Test(expected = org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException.class)
+  public void testZeroBlocksize() throws Exception {
+    final Configuration configuration = createCoreConfig();
+    configuration.set(SWIFT_BLOCKSIZE, "0");
+    mkInstance(configuration);
+  }
+
+  @Test(expected = org.apache.hadoop.fs.swift.exceptions.SwiftConfigurationException.class)
+  public void testNegativeBlocksize() throws Exception {
+    final Configuration configuration = createCoreConfig();
+    configuration.set(SWIFT_BLOCKSIZE, "-1");
+    mkInstance(configuration);
+  }
+
+  @Test
+  public void testPositiveBlocksize() throws Exception {
+    final Configuration configuration = createCoreConfig();
+    configuration.set(SWIFT_BLOCKSIZE, "1");
     mkInstance(configuration);
   }
 

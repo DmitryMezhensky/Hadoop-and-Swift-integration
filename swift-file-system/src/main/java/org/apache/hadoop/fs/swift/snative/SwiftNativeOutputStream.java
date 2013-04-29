@@ -1,13 +1,13 @@
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
+ * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
+ * regarding copyright ownership. The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * with the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,14 +24,19 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.exceptions.SwiftException;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Output stream, buffers data on local disk.
  * Writes to Swift on close() method
  */
 class SwiftNativeOutputStream extends OutputStream {
-  private long FILE_PART_SIZE = 4768709000l; // files greater than 4.5Gb are divided into parts
+  private long filePartSize = 4768709000L; // files greater than 4.5Gb are divided into parts
   private static final Log LOG =
           LogFactory.getLog(SwiftNativeOutputStream.class);
   private Configuration conf;
@@ -43,7 +48,6 @@ class SwiftNativeOutputStream extends OutputStream {
   private int partNumber;
   private long blockSize;
   private boolean partUpload = false;
-  private boolean abortWrite = false;
 
   public SwiftNativeOutputStream(Configuration conf,
                                  SwiftNativeFileSystemStore nativeStore,
@@ -88,26 +92,40 @@ class SwiftNativeOutputStream extends OutputStream {
     if (closed) {
       return;
     }
-    //formally declare as closed.
-    closed = true;
-    backupStream.close();
 
     try {
-      if (!abortWrite) {
-        if (partUpload) {
-          partUpload();
-          nativeStore.createManifestForPartUpload(new Path(key));
-        } else {
-          nativeStore.uploadFile(new Path(key),
-                  new FileInputStream(backupFile),
-                  backupFile.length());
-        }
+      closed = true;
+      //formally declare as closed.
+      backupStream.close();
+      Path keypath = new Path(key);
+      if (partUpload) {
+        partUpload();
+        nativeStore.createManifestForPartUpload(keypath);
+      } else {
+        nativeStore.uploadFile(keypath,
+                new FileInputStream(backupFile),
+                backupFile.length());
       }
     } finally {
-      if (!backupFile.delete()) {
-        LOG.warn("Could not delete " + backupFile);
-      }
+      delete(backupFile);
       backupStream = null;
+      backupFile = null;
+    }
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    if(!closed) {
+      LOG.warn("stream not closed");
+    }
+    if(backupFile!=null) {
+      LOG.warn("Leaking backing file "+ backupFile);
+    }
+  }
+
+  private void delete(File file) {
+    if (!file.delete()) {
+      LOG.warn("Could not delete " + file);
     }
   }
 
@@ -126,7 +144,7 @@ class SwiftNativeOutputStream extends OutputStream {
     verifyOpen();
 
     //if size of file is greater than 5Gb Swift limit - than divide file into parts and upload parts
-    if (blockSize + len >= FILE_PART_SIZE) {
+    if (blockSize + len >= filePartSize) {
       partUpload();
     }
 
@@ -141,7 +159,7 @@ class SwiftNativeOutputStream extends OutputStream {
             partNumber,
             new FileInputStream(backupFile),
             backupFile.length());
-    backupFile.delete();
+    delete(backupFile);
     backupFile = newBackupFile();
     backupStream = new BufferedOutputStream(new FileOutputStream(backupFile));
     blockSize = 0;
@@ -149,10 +167,20 @@ class SwiftNativeOutputStream extends OutputStream {
   }
 
   /**
-   * Cancel the write-on-close operation. This permits a faster bailout
-   * during some failures.
+   * Partition size can be set for testing purposes.
+   * This is intended for testing
+   * @param filePartSize new partition size
    */
-  public void abortWrite() {
-    abortWrite = true;
+  synchronized void setFilePartSize(long filePartSize) {
+    this.filePartSize = filePartSize;
+  }
+
+  /**
+   * Query the number of partitions written
+   * This is intended for testing
+   * @return the of partitions already written to the remote FS
+   */
+  synchronized int getPartitionsWritten() {
+    return partNumber - 1;
   }
 }

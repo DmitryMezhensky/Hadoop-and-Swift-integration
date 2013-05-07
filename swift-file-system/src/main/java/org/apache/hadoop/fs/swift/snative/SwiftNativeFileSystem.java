@@ -205,7 +205,9 @@ public class SwiftNativeFileSystem extends FileSystem {
                 .equals(SwiftObjectPath.fromPath(uri, file.getPath()))) {
           continue;
         }
-        locations.addAll(store.getObjectLocation(fileStatus.getPath()));
+        if (fileStatus.getPath() != null) {
+          locations.addAll(store.getObjectLocation(fileStatus.getPath()));
+        }
       }
     } else {
       locations = store.getObjectLocation(file.getPath());

@@ -261,7 +261,7 @@ public class SwiftBlockFileSystemStore implements FileSystemStore {
     } catch (SwiftException e) {
       throw new IOException(e);
     }
-    return SwiftNativeFileSystemStore.extractUris(new String(objectLocation));
+    return SwiftNativeFileSystemStore.extractUris(new String(objectLocation), new Path(""));
   }
 
   private void closeQuietly(Closeable closeable) {

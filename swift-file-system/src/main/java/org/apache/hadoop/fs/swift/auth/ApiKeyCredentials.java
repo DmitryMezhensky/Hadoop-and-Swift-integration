@@ -41,7 +41,7 @@ public class ApiKeyCredentials {
 
   /**
    * @param username user login
-   * @param apikey user api key
+   * @param apikey   user api key
    */
   public ApiKeyCredentials(String username, String apikey) {
     this.username = username;
@@ -79,7 +79,7 @@ public class ApiKeyCredentials {
   @Override
   public String toString() {
     return "user " +
-           "'" + username + '\'' +
-           " with key of length " + ((apikey == null) ? 0 : apikey.length());
+            "'" + username + '\'' +
+            " with key of length " + ((apikey == null) ? 0 : apikey.length());
   }
 }

@@ -81,6 +81,7 @@ public class SwiftInvalidResponseException extends SwiftConnectionException {
   /**
    * Override point: title of an exception -this is used in the
    * toString() method.
+   *
    * @return the new exception title
    */
   public String exceptionTitle() {
@@ -90,6 +91,7 @@ public class SwiftInvalidResponseException extends SwiftConnectionException {
   /**
    * Build a description that includes the exception title, the URI,
    * the message, the status code -and any body of the response
+   *
    * @return the string value for display
    */
   @Override

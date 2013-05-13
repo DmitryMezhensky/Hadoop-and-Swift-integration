@@ -35,7 +35,7 @@ import java.net.URISyntaxException;
 /**
  * This is the full filesystem contract test -which requires the
  * Default config set up to point to a filesystem.
- *
+ * <p/>
  * Some of the tests override the base class tests -these
  * are where SwiftFS does not implement those features, or
  * when the behavior of SwiftFS does not match the normal
@@ -91,7 +91,7 @@ public class TestSwiftFileSystemContract
       fail("Should throw IOException.");
     } catch (SwiftNotDirectoryException e) {
       // expected
-      assertEquals(filepath,e.getPath());
+      assertEquals(filepath, e.getPath());
     }
     //now verify that the subdir path does not exist
     SwiftTestUtils.assertPathDoesNotExist(fs, "subdir after mkdir", testSubDir);
@@ -104,7 +104,7 @@ public class TestSwiftFileSystemContract
       // expected
     }
     SwiftTestUtils.assertPathDoesNotExist(fs, "testDeepSubDir  after mkdir",
-                                          testDeepSubDir);
+            testDeepSubDir);
 
   }
 

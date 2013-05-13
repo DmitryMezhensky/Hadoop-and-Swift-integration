@@ -24,41 +24,41 @@ package org.apache.hadoop.fs.swift.auth;
  */
 public class KeystoneApiKeyCredentials {
 
-    /**
-     * User access key
-     */
-    private String accessKey;
+  /**
+   * User access key
+   */
+  private String accessKey;
 
-    /**
-     * User access secret
-     */
-    private String secretKey;
+  /**
+   * User access secret
+   */
+  private String secretKey;
 
-    public KeystoneApiKeyCredentials(String accessKey, String secretKey) {
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
-    }
+  public KeystoneApiKeyCredentials(String accessKey, String secretKey) {
+    this.accessKey = accessKey;
+    this.secretKey = secretKey;
+  }
 
-    public String getAccessKey() {
-        return accessKey;
-    }
+  public String getAccessKey() {
+    return accessKey;
+  }
 
-    public void setAccessKey(String accessKey) {
-        this.accessKey = accessKey;
-    }
+  public void setAccessKey(String accessKey) {
+    this.accessKey = accessKey;
+  }
 
-    public String getSecretKey() {
-        return secretKey;
-    }
+  public String getSecretKey() {
+    return secretKey;
+  }
 
-    public void setSecretKey(String secretKey) {
-        this.secretKey = secretKey;
-    }
+  public void setSecretKey(String secretKey) {
+    this.secretKey = secretKey;
+  }
 
-    @Override
-    public String toString() {
-        return "user " +
-                "'" + accessKey + '\'' +
-                " with key of length " + ((secretKey == null) ? 0 : secretKey.length());
-    }
+  @Override
+  public String toString() {
+    return "user " +
+            "'" + accessKey + '\'' +
+            " with key of length " + ((secretKey == null) ? 0 : secretKey.length());
+  }
 }

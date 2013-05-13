@@ -89,6 +89,7 @@ class SwiftNativeInputStream extends FSInputStream {
   /**
    * Move to a new position within the file relative to where the pointer is now.
    * Always call from a synchronized clause
+   *
    * @param offset offset
    */
   private synchronized void incPos(int offset) {
@@ -99,6 +100,7 @@ class SwiftNativeInputStream extends FSInputStream {
 
   /**
    * Update the start of the buffer; always call from a sync'd clause
+   *
    * @param seekPos position sought.
    */
   private synchronized void updateStartOfBufferPosition(long seekPos) {
@@ -173,6 +175,7 @@ class SwiftNativeInputStream extends FSInputStream {
   /**
    * Treats any finalize() call without the input stream being closed
    * as a serious problem, logging at error level
+   *
    * @throws Throwable n/a
    */
   @Override
@@ -189,8 +192,9 @@ class SwiftNativeInputStream extends FSInputStream {
    * compared to the read(bytes[]) method offered by input streams.
    * However, if you look at the code that implements that method, it comes
    * down to read() one char at a time -only here the return value is discarded.
+   *
    * @param bytes number of bytes to read.
-   * @throws IOException IO problems
+   * @throws IOException    IO problems
    * @throws SwiftException if a read returned -1.
    */
   private void chompBytes(long bytes) throws IOException {
@@ -206,6 +210,7 @@ class SwiftNativeInputStream extends FSInputStream {
 
   /**
    * Seek to an offset. If the data is already in the buffer, move to it
+   *
    * @param targetPos target position
    * @throws IOException on any problem
    */
@@ -235,7 +240,7 @@ class SwiftNativeInputStream extends FSInputStream {
         chompBytes(offset);
       } catch (IOException e) {
         //this is assumed to be recoverable with a seek -or more likely to fail
-        LOG.debug("while chomping ",e);
+        LOG.debug("while chomping ", e);
       }
       if (targetPos - pos == 0) {
         LOG.trace("chomping successful");

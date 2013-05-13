@@ -41,7 +41,7 @@ import java.net.URI;
 public class HttpInputStreamWithRelease extends InputStream {
 
   private static final Log LOG =
-    LogFactory.getLog(HttpInputStreamWithRelease.class);
+          LogFactory.getLog(HttpInputStreamWithRelease.class);
   private final URI uri;
   private HttpMethod method;
   //flag to say the stream is released -volatile so that read operations
@@ -57,7 +57,7 @@ public class HttpInputStreamWithRelease extends InputStream {
   private final Exception constructionStack;
 
   public HttpInputStreamWithRelease(URI uri, HttpMethod method) throws
-                                                                IOException {
+          IOException {
     this.uri = uri;
     this.method = method;
     constructionStack = LOG.isDebugEnabled() ? new Exception("stack") : null;
@@ -79,13 +79,14 @@ public class HttpInputStreamWithRelease extends InputStream {
 
   /**
    * Release logic
+   *
    * @param reason reason for release (used in debug messages)
-   * @param ex exception that is a cause -null for non-exceptional releases
+   * @param ex     exception that is a cause -null for non-exceptional releases
    * @return true if the release took place here
    * @throws IOException if the abort or close operations failed.
    */
   private synchronized boolean release(String reason, Exception ex) throws
-                                                                   IOException {
+          IOException {
     if (!released) {
       try {
         if (LOG.isDebugEnabled()) {
@@ -117,8 +118,9 @@ public class HttpInputStreamWithRelease extends InputStream {
 
   /**
    * Release the method, using the exception as a cause
+   *
    * @param operation operation that failed
-   * @param ex the exception which triggered it.
+   * @param ex        the exception which triggered it.
    * @return the exception to throw
    */
   private IOException releaseAndRethrow(String operation, IOException ex) {
@@ -136,12 +138,13 @@ public class HttpInputStreamWithRelease extends InputStream {
 
   /**
    * Assume that the connection is not released: throws an exception if it is
+   *
    * @throws IOException
    */
   private void assumeNotReleased() throws IOException {
     if (released) {
       throw new IOException(
-        "Operation failed as connection is closed to " + uri);
+              "Operation failed as connection is closed to " + uri);
     }
   }
 
@@ -197,18 +200,18 @@ public class HttpInputStreamWithRelease extends InputStream {
     try {
       if (release("finalize()", constructionStack)) {
         LOG.warn("input stream of " + uri
-                 + " not closed properly -cleaned up in finalize()");
+                + " not closed properly -cleaned up in finalize()");
       }
     } catch (Exception e) {
       //swallow anything that failed here
       LOG.warn("Exception while releasing " + uri + "in finalizer",
-               e);
+              e);
     }
   }
 
   @Override
   public String toString() {
     return "HttpInputStreamWithRelease working with " + uri
-      +" released=" + released;
+            + " released=" + released;
   }
 }

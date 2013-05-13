@@ -25,14 +25,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.snative.SwiftFileSystemForFunctionalTests;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem;
 import org.apache.hadoop.fs.swift.util.SwiftTestUtils;
-
-import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.readDataset;
 
 
 /**
@@ -41,7 +41,7 @@ import java.net.URISyntaxException;
 public class TestSwiftFileSystemPartitionedUploads extends SwiftFileSystemBaseTest {
 
   public static final String WRONG_PARTITION_COUNT =
-    "wrong number of partitions written";
+          "wrong number of partitions written";
   private URI uri;
   private Configuration conf;
   private SwiftFileSystemForFunctionalTests swiftFS;
@@ -80,26 +80,26 @@ public class TestSwiftFileSystemPartitionedUploads extends SwiftFileSystemBaseTe
     final Path path = new Path("/test/huge-file");
 
     int len = 4096;
-    final byte[] src = SwiftTestUtils.dataset(len,32,144);
+    final byte[] src = SwiftTestUtils.dataset(len, 32, 144);
     FSDataOutputStream out = fs.create(path, false,
-                                       fs.getConf()
-                                         .getInt("io.file.buffer.size",
-                                                 4096),
-                                       (short) 1,
-                                       1024);
+            fs.getConf()
+                    .getInt("io.file.buffer.size",
+                            4096),
+            (short) 1,
+            1024);
     assertEquals(WRONG_PARTITION_COUNT,
-                 0, swiftFS.getPartitionsWritten(out));
+            0, swiftFS.getPartitionsWritten(out));
     //write first half
     out.write(src, 0, len / 2);
     assertEquals(WRONG_PARTITION_COUNT,
-                 1, swiftFS.getPartitionsWritten(out));
+            1, swiftFS.getPartitionsWritten(out));
     //write second half
     out.write(src, len / 2, len / 2);
     assertEquals(WRONG_PARTITION_COUNT,
-                 2, swiftFS.getPartitionsWritten(out));
+            2, swiftFS.getPartitionsWritten(out));
     out.close();
     assertEquals(WRONG_PARTITION_COUNT,
-                 3, swiftFS.getPartitionsWritten(out));
+            3, swiftFS.getPartitionsWritten(out));
 
     assertTrue("Exists", fs.exists(path));
     FileStatus status = fs.getFileStatus(path);
@@ -115,7 +115,7 @@ public class TestSwiftFileSystemPartitionedUploads extends SwiftFileSystemBaseTe
     BlockLocation[] locations = fs.getFileBlockLocations(status, 0, len);
     assertNotNull("Null getFileBlockLocations()", locations);
     assertTrue("empty array returned for getFileBlockLocations()",
-               locations.length > 0);
+            locations.length > 0);
   }
 
 

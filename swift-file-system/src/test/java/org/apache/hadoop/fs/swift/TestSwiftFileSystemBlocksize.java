@@ -25,9 +25,9 @@ import org.junit.Test;
 
 /**
  * Tests that blocksize is never zero for a file, either in the FS default
- * or the FileStatus value of a queried file 
+ * or the FileStatus value of a queried file
  */
-public class TestSwiftFileSystemBlocksize extends  SwiftFileSystemBaseTest {
+public class TestSwiftFileSystemBlocksize extends SwiftFileSystemBaseTest {
 
   @Test
   public void testDefaultBlocksizeNonZero() throws Throwable {
@@ -37,22 +37,22 @@ public class TestSwiftFileSystemBlocksize extends  SwiftFileSystemBaseTest {
   @Test
   public void testDefaultBlocksizeRootPathNonZero() throws Throwable {
     assertTrue("Zero default blocksize",
-               0L != getFs().getDefaultBlockSize(new Path("/")));
+            0L != getFs().getDefaultBlockSize(new Path("/")));
   }
 
   @Test
   public void testDefaultBlocksizeOtherPathNonZero() throws Throwable {
     assertTrue("Zero default blocksize",
-               0L != getFs().getDefaultBlockSize(new Path("/test")));
+            0L != getFs().getDefaultBlockSize(new Path("/test")));
   }
 
   @Test
   public void testBlocksizeNonZeroForFile() throws Throwable {
     Path smallfile = new Path("/test/smallfile");
-    SwiftTestUtils.writeTextFile(fs,smallfile,"blocksize",true);
+    SwiftTestUtils.writeTextFile(fs, smallfile, "blocksize", true);
     createFile(smallfile);
     FileStatus status = getFs().getFileStatus(smallfile);
-    assertTrue("Zero blocksize in "+ status,
-               status.getBlockSize()!=0L);
+    assertTrue("Zero blocksize in " + status,
+            status.getBlockSize() != 0L);
   }
 }

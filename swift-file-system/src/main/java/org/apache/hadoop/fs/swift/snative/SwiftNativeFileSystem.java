@@ -135,7 +135,6 @@ public class SwiftNativeFileSystem extends FileSystem {
   }
 
   /**
-   *
    * Operation class with Swift Blob Store
    *
    * @return SwiftNativeFileSystemStore

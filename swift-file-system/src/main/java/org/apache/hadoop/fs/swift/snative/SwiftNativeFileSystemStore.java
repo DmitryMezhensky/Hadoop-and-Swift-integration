@@ -43,11 +43,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,8 +62,8 @@ public class SwiftNativeFileSystemStore {
   /**
    * Initalize the filesystem store -this creates the REST client binding.
    *
-   * @param fsURI URI of the filesystem, which is used to map to the filesystem-specific
-   * options in the configuration file
+   * @param fsURI         URI of the filesystem, which is used to map to the filesystem-specific
+   *                      options in the configuration file
    * @param configuration configuration
    * @throws IOException on any failure.
    */
@@ -84,8 +80,9 @@ public class SwiftNativeFileSystemStore {
 
   /**
    * Get the default blocksize of this (bound) filesystem
+   *
    * @return the blocksize returned for all FileStatus queries,
-   * which is used by the MapReduce splitter.
+   *         which is used by the MapReduce splitter.
    */
   public long getBlocksize() {
     return swiftRestClient.getBlocksize();
@@ -94,9 +91,9 @@ public class SwiftNativeFileSystemStore {
   /**
    * Upload a file/input stream of a specific length.
    *
-   * @param path destination path in the swift filesystem
+   * @param path        destination path in the swift filesystem
    * @param inputStream input data. This is closed afterwards, always
-   * @param length length of the data
+   * @param length      length of the data
    * @throws IOException on a problem
    */
   public void uploadFile(Path path, InputStream inputStream, long length)
@@ -107,10 +104,10 @@ public class SwiftNativeFileSystemStore {
   /**
    * Upload part of a larger file.
    *
-   * @param path destination path
-   * @param partNumber item number in the path
+   * @param path        destination path
+   * @param partNumber  item number in the path
    * @param inputStream input data
-   * @param length length of the data
+   * @param length      length of the data
    * @throws IOException on a problem
    */
   public void uploadFilePart(Path path, int partNumber,
@@ -157,7 +154,7 @@ public class SwiftNativeFileSystemStore {
    *
    * @param path path
    * @return file metadata. -or null if no headers were received back from the server.
-   * @throws IOException on a problem
+   * @throws IOException           on a problem
    * @throws FileNotFoundException if there is nothing at the end
    */
   public SwiftFileStatus getObjectMetadata(Path path) throws IOException {
@@ -208,7 +205,7 @@ public class SwiftNativeFileSystemStore {
    *
    * @param path object path
    * @return the input stream -this must be closed to terminate the connection
-   * @throws IOException IO problems
+   * @throws IOException           IO problems
    * @throws FileNotFoundException path doesn't resolve to an object
    */
   public InputStream getObject(Path path) throws IOException {
@@ -219,9 +216,9 @@ public class SwiftNativeFileSystemStore {
   /**
    * Get the input stream starting from a specific point.
    *
-   * @param path path to object
+   * @param path           path to object
    * @param byteRangeStart starting point
-   * @param length no. of bytes
+   * @param length         no. of bytes
    * @return an input stream that must be closed
    * @throws IOException IO problems
    */
@@ -314,7 +311,7 @@ public class SwiftNativeFileSystemStore {
    *
    * @param path path to work with
    * @return the file statuses, or an empty array if there are no children
-   * @throws IOException on IO problems
+   * @throws IOException           on IO problems
    * @throws FileNotFoundException if the path is nonexistent
    */
   public FileStatus[] listSubPaths(Path path) throws IOException {
@@ -351,6 +348,7 @@ public class SwiftNativeFileSystemStore {
 
   /**
    * Try to find the specific server(s) on which the data lives
+   *
    * @param path path to probe
    * @return a possibly empty list of locations
    * @throws IOException on problems determining the locations
@@ -389,7 +387,7 @@ public class SwiftNativeFileSystemStore {
    *
    * @param path path to delete
    * @return true if the path was deleted by this specific operation -or
-   * the path was root and not acted on.
+   *         the path was root and not acted on.
    * @throws IOException on a failure
    */
   public boolean rmdir(Path path) throws IOException {
@@ -402,7 +400,7 @@ public class SwiftNativeFileSystemStore {
    * @param path object path
    * @return true if the metadata of an object could be retrieved
    * @throws IOException IO problems other than FileNotFound, which
-   * is downgraded to an object does not exist return code
+   *                     is downgraded to an object does not exist return code
    */
   public boolean objectExists(Path path) throws IOException {
     return objectExists(toObjectPath(path));
@@ -414,7 +412,7 @@ public class SwiftNativeFileSystemStore {
    * @param path swift object path
    * @return true if the metadata of an object could be retrieved
    * @throws IOException IO problems other than FileNotFound, which
-   * is downgraded to an object does not exist return code
+   *                     is downgraded to an object does not exist return code
    */
   public boolean objectExists(SwiftObjectPath path) throws IOException {
     try {
@@ -436,10 +434,10 @@ public class SwiftNativeFileSystemStore {
    *
    * @param src source file/dir
    * @param dst destination
-   * @throws IOException IO failure
+   * @throws IOException                   IO failure
    * @throws SwiftOperationFailedException if the rename failed
-   * @throws FileNotFoundException if the source directory is missing, or
-   * the parent directory of the destination
+   * @throws FileNotFoundException         if the source directory is missing, or
+   *                                       the parent directory of the destination
    */
   public void rename(Path src, Path dst)
           throws FileNotFoundException, SwiftOperationFailedException, IOException {
@@ -599,9 +597,9 @@ public class SwiftNativeFileSystemStore {
   /**
    * Debug action to dump directory statuses to the debug log
    *
-   * @param message explanation
+   * @param message    explanation
    * @param objectPath object path (can be null)
-   * @param statuses listing output
+   * @param statuses   listing output
    */
   private void logDirectory(String message, SwiftObjectPath objectPath,
                             Iterable<FileStatus> statuses) {
@@ -625,7 +623,7 @@ public class SwiftNativeFileSystemStore {
    * Copy and object then, if the copy worked, delete it.
    * If the copy failed, the source object is not deleted.
    *
-   * @param srcObject source object path
+   * @param srcObject  source object path
    * @param destObject destination object path
    * @throws IOException
    */
@@ -685,6 +683,7 @@ public class SwiftNativeFileSystemStore {
 
   /**
    * extracts URIs from json
+   *
    * @param json json to parse
    * @param path path (used in exceptions)
    * @return URIs

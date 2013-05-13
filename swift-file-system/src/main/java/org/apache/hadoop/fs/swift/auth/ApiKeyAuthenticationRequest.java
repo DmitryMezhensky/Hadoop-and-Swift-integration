@@ -32,7 +32,8 @@ public class ApiKeyAuthenticationRequest extends AuthenticationRequest {
 
   /**
    * API key auth
-   * @param tenantName tenant
+   *
+   * @param tenantName        tenant
    * @param apiKeyCredentials credentials
    */
   public ApiKeyAuthenticationRequest(String tenantName, ApiKeyCredentials apiKeyCredentials) {
@@ -58,7 +59,7 @@ public class ApiKeyAuthenticationRequest extends AuthenticationRequest {
   @Override
   public String toString() {
     return "Auth as " +
-           "tenant '" + tenantName + "' "
-           + apiKeyCredentials;
+            "tenant '" + tenantName + "' "
+            + apiKeyCredentials;
   }
 }

@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class TestSwiftFileSystemConcurrency extends SwiftFileSystemBaseTest {
   protected static final Log LOG =
-    LogFactory.getLog(TestSwiftFileSystemConcurrency.class);
+          LogFactory.getLog(TestSwiftFileSystemConcurrency.class);
   private Exception thread1Ex, thread2Ex;
 
   /**

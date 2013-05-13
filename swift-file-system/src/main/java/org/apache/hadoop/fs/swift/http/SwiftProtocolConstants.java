@@ -124,7 +124,7 @@ public class SwiftProtocolConstants {
   public static final String SWIFT_USE_API_KEY_PROPERTY = FS_SWIFT + DOT_USE_APIKEY;
 
   public static final String SWIFT_LOCATION_AWARE_PROPERTY = FS_SWIFT +
-            DOT_LOCATION_AWARE;
+          DOT_LOCATION_AWARE;
 
   public static final String SWIFT_PROXY_HOST_PROPERTY = FS_SWIFT + DOT_PROXY_HOST;
   public static final String SWIFT_PROXY_PORT_PROPERTY = FS_SWIFT + DOT_PROXY_PORT;

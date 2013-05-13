@@ -122,7 +122,7 @@ public final class SwiftObjectPath {
   /**
    * Query to see if the possibleChild object is a child path of this.
    * object.
-   *
+   * <p/>
    * The test is done by probing for the path of the this object being
    * at the start of the second -with a trailing slash, and both
    * containers being equal

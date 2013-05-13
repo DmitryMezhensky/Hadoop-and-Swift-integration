@@ -20,10 +20,11 @@ package org.apache.hadoop.fs.swift;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
-import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.*;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.*;
 
 /**
  * Test the FileSystem#listStatus() operations
@@ -32,7 +33,7 @@ public class TestSwiftFileSystemLsOperations extends SwiftFileSystemBaseTest {
 
   private Path[] testDirs;
 
-    /**
+  /**
    * Setup creates dirs under test/hadoop
    *
    * @throws Exception
@@ -50,14 +51,15 @@ public class TestSwiftFileSystemLsOperations extends SwiftFileSystemBaseTest {
    * Create subdirectories and files under test/ for those tests
    * that want them. Doing so adds overhead to setup and teardown,
    * so should only be done for those tests that need them.
+   *
    * @throws IOException on an IO problem
    */
   private void createTestSubdirs() throws IOException {
     testDirs = new Path[]{
-              path("/test/hadoop/a"),
-              path("/test/hadoop/b"),
-              path("/test/hadoop/c/1"),
-      };
+            path("/test/hadoop/a"),
+            path("/test/hadoop/b"),
+            path("/test/hadoop/c/1"),
+    };
 
     assertPathDoesNotExist("test directory setup", testDirs[0]);
     for (Path path : testDirs) {
@@ -91,19 +93,19 @@ public class TestSwiftFileSystemLsOperations extends SwiftFileSystemBaseTest {
     FileStatus[] paths;
     paths = fs.listStatus(path("/test/hadoop/a"));
     assertEquals(dumpStats("/test/hadoop/a", paths), 0,
-                 paths.length);
+            paths.length);
   }
 
   @Test
   public void testListStatusFile() throws Exception {
     describe("Create a single file under /test;" +
-             " assert that listStatus(/test) finds it");
+            " assert that listStatus(/test) finds it");
     Path file = path("/test/filename");
     createFile(file);
     FileStatus[] paths = fs.listStatus(file);
     assertEquals(dumpStats("/test/", paths),
-                 1,
-                 paths.length);
+            1,
+            paths.length);
   }
 
   @Test

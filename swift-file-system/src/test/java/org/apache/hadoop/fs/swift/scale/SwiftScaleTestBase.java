@@ -26,12 +26,12 @@ import org.apache.hadoop.fs.swift.SwiftFileSystemBaseTest;
  */
 
 public class SwiftScaleTestBase extends SwiftFileSystemBaseTest {
-  
+
   public static final String SCALE_TEST = "scale.test.";
   public static final String KEY_OPERATION_COUNT = SCALE_TEST + "operation.count";
   public static final long DEFAULT_OPERATION_COUNT = 1;
-  
+
   protected long getOperationCount() {
-    return getConf().getLong(KEY_OPERATION_COUNT,DEFAULT_OPERATION_COUNT);
+    return getConf().getLong(KEY_OPERATION_COUNT, DEFAULT_OPERATION_COUNT);
   }
 }

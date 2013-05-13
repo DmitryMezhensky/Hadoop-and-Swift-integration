@@ -26,12 +26,12 @@ import org.apache.hadoop.fs.swift.exceptions.SwiftBadRequestException;
 import org.apache.hadoop.fs.swift.exceptions.SwiftNotDirectoryException;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem;
 import org.apache.hadoop.fs.swift.util.SwiftTestUtils;
-import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.*;
-
 import org.junit.Test;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.*;
 
 
 /**

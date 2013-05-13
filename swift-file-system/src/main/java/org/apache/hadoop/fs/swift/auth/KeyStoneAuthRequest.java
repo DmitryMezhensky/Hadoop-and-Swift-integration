@@ -18,44 +18,40 @@
 
 package org.apache.hadoop.fs.swift.auth;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-
 /**
  * Class that represents authentication to OpenStack Keystone.
  * Contains basic authentication information.
  * Used when @see ApiKeyAuthenticationRequest not applicable
  * (problem with different Keystone installations/versions/modifications)
- *
  */
 public class KeyStoneAuthRequest extends AuthenticationRequest {
 
-    /**
-     * Credentials for Keystone authentication
-     */
-    private KeystoneApiKeyCredentials apiAccessKeyCredentials;
+  /**
+   * Credentials for Keystone authentication
+   */
+  private KeystoneApiKeyCredentials apiAccessKeyCredentials;
 
-    /**
-     *
-     * @param tenant                    Keystone tenant name for authentication
-     * @param apiAccessKeyCredentials   Credentials for authentication
-     */
-    public KeyStoneAuthRequest(String tenant, KeystoneApiKeyCredentials apiAccessKeyCredentials) {
-        this.apiAccessKeyCredentials = apiAccessKeyCredentials;
-        this.tenantName = tenant;
-    }
+  /**
+   * @param tenant                  Keystone tenant name for authentication
+   * @param apiAccessKeyCredentials Credentials for authentication
+   */
+  public KeyStoneAuthRequest(String tenant, KeystoneApiKeyCredentials apiAccessKeyCredentials) {
+    this.apiAccessKeyCredentials = apiAccessKeyCredentials;
+    this.tenantName = tenant;
+  }
 
-    public KeystoneApiKeyCredentials getApiAccessKeyCredentials() {
-        return apiAccessKeyCredentials;
-    }
+  public KeystoneApiKeyCredentials getApiAccessKeyCredentials() {
+    return apiAccessKeyCredentials;
+  }
 
-    public void setApiAccessKeyCredentials(KeystoneApiKeyCredentials apiAccessKeyCredentials) {
-        this.apiAccessKeyCredentials = apiAccessKeyCredentials;
-    }
+  public void setApiAccessKeyCredentials(KeystoneApiKeyCredentials apiAccessKeyCredentials) {
+    this.apiAccessKeyCredentials = apiAccessKeyCredentials;
+  }
 
-    @Override
-    public String toString() {
-        return "KeyStoneAuthRequest as " +
-                "tenant '" + tenantName + "' "
-                + apiAccessKeyCredentials;
-    }
+  @Override
+  public String toString() {
+    return "KeyStoneAuthRequest as " +
+            "tenant '" + tenantName + "' "
+            + apiAccessKeyCredentials;
+  }
 }

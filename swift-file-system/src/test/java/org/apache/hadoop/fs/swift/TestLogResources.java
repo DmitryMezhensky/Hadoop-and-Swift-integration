@@ -29,7 +29,7 @@ import java.net.URL;
  */
 public class TestLogResources {
   protected static final Log LOG =
-    LogFactory.getLog(TestLogResources.class);
+          LogFactory.getLog(TestLogResources.class);
 
   private void printf(String format, Object... args) {
     String msg = String.format(format, args);

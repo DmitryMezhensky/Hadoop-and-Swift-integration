@@ -26,8 +26,8 @@ public class DurationStats {
   final String operation;
   int n;
   long sum;
-  long min=10000000;
-  long max=0;
+  long min = 10000000;
+  long max = 0;
   double mean, m2;
 
   public DurationStats(String operation) {
@@ -36,6 +36,7 @@ public class DurationStats {
 
   /**
    * Add a duration
+   *
    * @param duration the new duration
    */
   public void add(Duration duration) {
@@ -44,6 +45,7 @@ public class DurationStats {
 
   /**
    * Add a number
+   *
    * @param x the number
    */
   public void add(long x) {
@@ -52,8 +54,8 @@ public class DurationStats {
     double delta = x - mean;
     mean += delta / n;
     m2 += delta * (x - mean);
-    if (x<min) min=x;
-    if (x>max) max=x;
+    if (x < min) min = x;
+    if (x > max) max = x;
   }
 
   public int getCount() {
@@ -79,13 +81,13 @@ public class DurationStats {
   @Override
   public String toString() {
     return String.format(
-      "'operation','%s','count',%d,'total',%d,'mean',%f,'dev',%f,'min',%d,'max',%d",
-      operation,
-      n,
-      sum,
-      mean,
-      getDeviation(),
-      min,max
-      );
+            "'operation','%s','count',%d,'total',%d,'mean',%f,'dev',%f,'min',%d,'max',%d",
+            operation,
+            n,
+            sum,
+            mean,
+            getDeviation(),
+            min, max
+    );
   }
 }

@@ -29,7 +29,7 @@ public class PasswordAuthenticationRequest extends AuthenticationRequest {
   private PasswordCredentials passwordCredentials;
 
   /**
-   * @param tenantName tenant
+   * @param tenantName          tenant
    * @param passwordCredentials password credentials
    */
   public PasswordAuthenticationRequest(String tenantName, PasswordCredentials passwordCredentials) {
@@ -54,7 +54,7 @@ public class PasswordAuthenticationRequest extends AuthenticationRequest {
   @Override
   public String toString() {
     return "Auth as " +
-           "tenant '" + tenantName + "' "
-           + passwordCredentials;
+            "tenant '" + tenantName + "' "
+            + passwordCredentials;
   }
 }

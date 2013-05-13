@@ -38,23 +38,23 @@ public class TestSwiftFileSystemBlockLocation extends SwiftFileSystemBaseTest {
     describe("verify that a file returns 1+ blocks");
     FileStatus fileStatus = createFileAndGetStatus();
     BlockLocation[] locations =
-      getFs().getFileBlockLocations(fileStatus, 0, 1);
+            getFs().getFileBlockLocations(fileStatus, 0, 1);
     assertNotEqual("No block locations supplied for " + fileStatus, 0,
-                   locations.length);
+            locations.length);
     for (BlockLocation location : locations) {
       assertLocationValid(location);
     }
   }
 
   private void assertLocationValid(BlockLocation location) throws
-                                                           IOException {
+          IOException {
     LOG.info(location);
     String[] hosts = location.getHosts();
     String[] names = location.getNames();
     assertNotEqual("No hosts supplied for " + location, 0, hosts.length);
     //for every host, there's a name.
     assertEquals("Unequal names and hosts in " + location,
-                 hosts.length, names.length);
+            hosts.length, names.length);
   }
 
   private FileStatus createFileAndGetStatus() throws IOException {
@@ -68,9 +68,9 @@ public class TestSwiftFileSystemBlockLocation extends SwiftFileSystemBaseTest {
     describe("verify that a negative offset is illegal");
     try {
       BlockLocation[] locations =
-        getFs().getFileBlockLocations(createFileAndGetStatus(),
-                                      -1,
-                                      1);
+              getFs().getFileBlockLocations(createFileAndGetStatus(),
+                      -1,
+                      1);
       fail("Expected an exception, got " + locations.length + " locations");
     } catch (IllegalArgumentException e) {
       //expected
@@ -82,9 +82,9 @@ public class TestSwiftFileSystemBlockLocation extends SwiftFileSystemBaseTest {
     describe("verify that a negative length is illegal");
     try {
       BlockLocation[] locations =
-        getFs().getFileBlockLocations(createFileAndGetStatus(),
-                                      0,
-                                      -1);
+              getFs().getFileBlockLocations(createFileAndGetStatus(),
+                      0,
+                      -1);
       fail("Expected an exception, got " + locations.length + " locations");
     } catch (IllegalArgumentException e) {
       //expected
@@ -95,12 +95,12 @@ public class TestSwiftFileSystemBlockLocation extends SwiftFileSystemBaseTest {
   @Test
   public void testLocateOutOfRangeLen() throws Throwable {
     describe("overshooting the length is legal, as long as the" +
-             " origin location is valid");
+            " origin location is valid");
 
     BlockLocation[] locations =
-      getFs().getFileBlockLocations(createFileAndGetStatus(),
-                                    0,
-                                    data.length + 100);
+            getFs().getFileBlockLocations(createFileAndGetStatus(),
+                    0,
+                    data.length + 100);
     assertNotNull(locations);
     assertTrue(locations.length > 0);
   }
@@ -110,15 +110,15 @@ public class TestSwiftFileSystemBlockLocation extends SwiftFileSystemBaseTest {
     describe("Seeking out of the file length returns an empty array");
 
     BlockLocation[] locations =
-      getFs().getFileBlockLocations(createFileAndGetStatus(),
-                                    data.length + 100,
-                                    1);
+            getFs().getFileBlockLocations(createFileAndGetStatus(),
+                    data.length + 100,
+                    1);
     assertEmptyBlockLocations(locations);
   }
 
   private void assertEmptyBlockLocations(BlockLocation[] locations) {
     assertNotNull(locations);
-    if (locations.length!=0) {
+    if (locations.length != 0) {
       fail("non empty locations[] with first entry of " + locations[0]);
     }
   }
@@ -132,8 +132,8 @@ public class TestSwiftFileSystemBlockLocation extends SwiftFileSystemBaseTest {
     SwiftTestUtils.assertIsDirectory(status);
     BlockLocation[] locations;
     locations = getFs().getFileBlockLocations(status,
-                                              0,
-                                              1);
+            0,
+            1);
     assertEmptyBlockLocations(locations);
   }
 
@@ -145,8 +145,8 @@ public class TestSwiftFileSystemBlockLocation extends SwiftFileSystemBaseTest {
     SwiftTestUtils.assertIsDirectory(status);
     BlockLocation[] locations;
     locations = getFs().getFileBlockLocations(status,
-                                              0,
-                                              1);
+            0,
+            1);
     assertEmptyBlockLocations(locations);
   }
 

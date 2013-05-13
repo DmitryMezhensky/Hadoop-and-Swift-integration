@@ -19,7 +19,6 @@
 package org.apache.hadoop.fs.swift.util;
 
 import org.apache.commons.logging.Log;
-
 import org.apache.hadoop.fs.FileStatus;
 
 /**

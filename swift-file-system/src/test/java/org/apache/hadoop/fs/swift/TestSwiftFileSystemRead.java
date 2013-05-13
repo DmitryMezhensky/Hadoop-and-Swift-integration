@@ -28,7 +28,6 @@ import java.io.IOException;
 
 import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.readBytesToString;
 import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.writeTextFile;
-import static org.junit.Assert.fail;
 
 /**
  * Test filesystem read operations
@@ -38,6 +37,7 @@ public class TestSwiftFileSystemRead extends SwiftFileSystemBaseTest {
 
   /**
    * Read past the end of a file: expect the operation to fail
+   *
    * @throws IOException
    */
   @Test
@@ -57,19 +57,20 @@ public class TestSwiftFileSystemRead extends SwiftFileSystemBaseTest {
 
   /**
    * Read and write some JSON
+   *
    * @throws IOException
    */
   @Test
   public void testRWJson() throws IOException {
     final String message = "{" +
-                           " 'json': { 'i':43, 'b':true}," +
-                           " 's':'string'" +
-                           "}";
+            " 'json': { 'i':43, 'b':true}," +
+            " 's':'string'" +
+            "}";
     final Path filePath = new Path("/test/file.json");
 
     writeTextFile(fs, filePath, message, false);
     String readJson = readBytesToString(fs, filePath, message.length());
-    assertEquals(message,readJson);
+    assertEquals(message, readJson);
     //now find out where it is
     FileStatus status = fs.getFileStatus(filePath);
     BlockLocation[] locations = fs.getFileBlockLocations(status, 0, 10);
@@ -77,19 +78,20 @@ public class TestSwiftFileSystemRead extends SwiftFileSystemBaseTest {
 
   /**
    * Read and write some XML
+   *
    * @throws IOException
    */
   @Test
   public void testRWXML() throws IOException {
     final String message = "<x>" +
-                           " <json i='43' 'b'=true/>" +
-                           " string" +
-                           "</x>";
+            " <json i='43' 'b'=true/>" +
+            " string" +
+            "</x>";
     final Path filePath = new Path("/test/file.xml");
 
     writeTextFile(fs, filePath, message, false);
     String read = readBytesToString(fs, filePath, message.length());
-    assertEquals(message,read);
+    assertEquals(message, read);
   }
 
 }

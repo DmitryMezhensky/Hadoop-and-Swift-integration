@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
 /**
  * Test deletion operations
  */
@@ -48,6 +47,7 @@ public class TestSwiftFileSystemDelete extends SwiftFileSystemBaseTest {
 
   /**
    * Test recursive root directory deletion fails if there is an entry underneath
+   *
    * @throws Throwable
    */
   @Test

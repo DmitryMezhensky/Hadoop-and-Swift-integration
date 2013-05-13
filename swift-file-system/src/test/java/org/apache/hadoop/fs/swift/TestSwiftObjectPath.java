@@ -28,9 +28,7 @@ import org.junit.Test;
 
 import java.net.URI;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Unit tests for SwiftObjectPath class.
@@ -98,38 +96,38 @@ public class TestSwiftObjectPath {
 
   @Test
   public void testRootDirProbeEmptyPath() throws Throwable {
-    SwiftObjectPath object=new SwiftObjectPath("container","");
+    SwiftObjectPath object = new SwiftObjectPath("container", "");
     assertTrue(SwiftUtils.isRootDir(object));
   }
 
   @Test
   public void testRootDirProbeRootPath() throws Throwable {
-    SwiftObjectPath object=new SwiftObjectPath("container","/");
+    SwiftObjectPath object = new SwiftObjectPath("container", "/");
     assertTrue(SwiftUtils.isRootDir(object));
   }
 
   private void assertParentOf(SwiftObjectPath p1, SwiftObjectPath p2) {
-    assertTrue(p1.toString() + " is not a parent of " + p2 ,p1.isEqualToOrParentOf(
-      p2));
+    assertTrue(p1.toString() + " is not a parent of " + p2, p1.isEqualToOrParentOf(
+            p2));
   }
 
   private void assertNotParentOf(SwiftObjectPath p1, SwiftObjectPath p2) {
     assertFalse(p1.toString() + " is a parent of " + p2, p1.isEqualToOrParentOf(
-      p2));
+            p2));
   }
 
   @Test
   public void testChildOfProbe() throws Throwable {
     SwiftObjectPath parent = new SwiftObjectPath("container",
-                                                 "/parent");
+            "/parent");
     SwiftObjectPath parent2 = new SwiftObjectPath("container",
-                                                 "/parent2");
+            "/parent2");
     SwiftObjectPath child = new SwiftObjectPath("container",
-                                                 "/parent/child");
+            "/parent/child");
     SwiftObjectPath sibling = new SwiftObjectPath("container",
-                                                 "/parent/sibling");
+            "/parent/sibling");
     SwiftObjectPath grandchild = new SwiftObjectPath("container",
-                                                     "/parent/child/grandchild");
+            "/parent/child/grandchild");
     assertParentOf(parent, child);
     assertParentOf(parent, grandchild);
     assertParentOf(child, grandchild);
@@ -145,7 +143,7 @@ public class TestSwiftObjectPath {
     SwiftObjectPath root = new SwiftObjectPath("container", "/");
     SwiftObjectPath child = new SwiftObjectPath("container", "child");
     SwiftObjectPath grandchild = new SwiftObjectPath("container",
-                                                     "/child/grandchild");
+            "/child/grandchild");
     assertParentOf(root, child);
     assertParentOf(root, grandchild);
     assertParentOf(child, grandchild);
@@ -156,6 +154,4 @@ public class TestSwiftObjectPath {
   }
 
 
-
-  
 }

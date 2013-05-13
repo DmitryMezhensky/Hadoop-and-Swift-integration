@@ -28,8 +28,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
 
-import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.assertPropertyEquals;
 import static org.apache.hadoop.fs.swift.http.SwiftProtocolConstants.*;
+import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.assertPropertyEquals;
 
 public class TestRestClientBindings extends Assert {
 
@@ -91,11 +91,11 @@ public class TestRestClientBindings extends Assert {
       Properties binding = RestClientBindings.bind(fsURI, config);
       //if we get here, binding didn't fail- there is something else.
       //list the properties but not the values.
-      StringBuilder details = new StringBuilder() ;
-      for (Object key: binding.keySet()) {
+      StringBuilder details = new StringBuilder();
+      for (Object key : binding.keySet()) {
         details.append(key.toString()).append(" ");
       }
-      fail("Expected a failure, got the binding [ "+ details+"]");
+      fail("Expected a failure, got the binding [ " + details + "]");
     } catch (SwiftConfigurationException expected) {
 
     }

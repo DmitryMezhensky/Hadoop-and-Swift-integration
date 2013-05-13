@@ -27,9 +27,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.exceptions.SwiftOperationFailedException;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystem;
 import org.apache.hadoop.fs.swift.snative.SwiftNativeFileSystemStore;
-
-import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.*;
-
 import org.apache.hadoop.fs.swift.util.SwiftTestUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -40,6 +37,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static org.apache.hadoop.fs.swift.util.SwiftTestUtils.*;
 
 public class SwiftFileSystemBaseTest extends Assert {
   protected static final Log LOG =
@@ -73,6 +72,7 @@ public class SwiftFileSystemBaseTest extends Assert {
 
   /**
    * Get the configuration used to set up the FS
+   *
    * @return the configuration
    */
   public Configuration getConf() {
@@ -95,7 +95,7 @@ public class SwiftFileSystemBaseTest extends Assert {
 
   protected SwiftNativeFileSystem createSwiftFS() throws IOException {
     SwiftNativeFileSystem swiftNativeFileSystem =
-      new SwiftNativeFileSystem();
+            new SwiftNativeFileSystem();
     return swiftNativeFileSystem;
   }
 
@@ -205,7 +205,7 @@ public class SwiftFileSystemBaseTest extends Assert {
    */
   protected void renameToSuccess(Path src, Path dst,
                                  boolean srcExists, boolean dstExists)
-      throws SwiftOperationFailedException, IOException {
+          throws SwiftOperationFailedException, IOException {
     getStore().rename(src, dst);
     String outcome = getRenameOutcome(src, dst);
     assertEquals("Source " + src + "exists: " + outcome,
@@ -254,12 +254,13 @@ public class SwiftFileSystemBaseTest extends Assert {
 
   /**
    * Assert that a value is not equal to the expected value
-   * @param message message if the two values are equal
+   *
+   * @param message  message if the two values are equal
    * @param expected expected value
-   * @param actual actual value
+   * @param actual   actual value
    */
   protected void assertNotEqual(String message, int expected, int actual) {
     assertTrue(message,
-               actual != expected);
+            actual != expected);
   }
 }

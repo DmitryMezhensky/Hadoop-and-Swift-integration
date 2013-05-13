@@ -42,6 +42,6 @@ public class Duration {
   }
 
   public long value() {
-    return finished -started;
+    return finished - started;
   }
 }

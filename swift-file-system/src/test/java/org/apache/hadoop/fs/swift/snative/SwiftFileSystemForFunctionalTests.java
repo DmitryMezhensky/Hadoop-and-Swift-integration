@@ -41,10 +41,10 @@ public class SwiftFileSystemForFunctionalTests extends SwiftNativeFileSystem {
                                    Progressable progress) throws IOException {
 
     FSDataOutputStream fsDataOutputStream =
-      super.create(file, permission, overwrite, bufferSize, replication,
-                   blockSize, progress);
+            super.create(file, permission, overwrite, bufferSize, replication,
+                    blockSize, progress);
     SwiftNativeOutputStream out =
-      (SwiftNativeOutputStream) fsDataOutputStream.getWrappedStream();
+            (SwiftNativeOutputStream) fsDataOutputStream.getWrappedStream();
     partitionSize = 1024L;
     out.setFilePartSize(partitionSize);
     return fsDataOutputStream;
@@ -61,12 +61,13 @@ public class SwiftFileSystemForFunctionalTests extends SwiftNativeFileSystem {
 
   /**
    * Get the number of partitions written
+   *
    * @param outputStream output stream
    * @return the #of partitions written by that stream
    */
   public int getPartitionsWritten(FSDataOutputStream outputStream) {
     OutputStream wrappedStream = outputStream.getWrappedStream();
-    SwiftNativeOutputStream snos = (SwiftNativeOutputStream)wrappedStream;
+    SwiftNativeOutputStream snos = (SwiftNativeOutputStream) wrappedStream;
     return snos.getPartitionsWritten();
   }
 

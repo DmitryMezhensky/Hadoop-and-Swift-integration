@@ -24,12 +24,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.swift.exceptions.SwiftException;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * Output stream, buffers data on local disk.
@@ -115,11 +110,11 @@ class SwiftNativeOutputStream extends OutputStream {
 
   @Override
   protected void finalize() throws Throwable {
-    if(!closed) {
+    if (!closed) {
       LOG.warn("stream not closed");
     }
-    if(backupFile!=null) {
-      LOG.warn("Leaking backing file "+ backupFile);
+    if (backupFile != null) {
+      LOG.warn("Leaking backing file " + backupFile);
     }
   }
 
@@ -169,6 +164,7 @@ class SwiftNativeOutputStream extends OutputStream {
   /**
    * Partition size can be set for testing purposes.
    * This is intended for testing
+   *
    * @param filePartSize new partition size
    */
   synchronized void setFilePartSize(long filePartSize) {
@@ -178,6 +174,7 @@ class SwiftNativeOutputStream extends OutputStream {
   /**
    * Query the number of partitions written
    * This is intended for testing
+   *
    * @return the of partitions already written to the remote FS
    */
   synchronized int getPartitionsWritten() {

@@ -28,7 +28,7 @@ import org.junit.Test;
 public class TestWriteManySmallFiles extends SwiftScaleTestBase {
 
   public static final Log LOG = LogFactory.getLog(TestWriteManySmallFiles.class);
-  
+
   @Test
   public void testScaledWriteThenRead() throws Throwable {
     Path dir = new Path("/test/manysmallfiles");
@@ -70,17 +70,17 @@ public class TestWriteManySmallFiles extends SwiftScaleTestBase {
     fs.delete(dir, true);
     rm2.finished();
     //print the stats
-    LOG.info(String.format("'filesystem','%s'",fs.getUri()));
+    LOG.info(String.format("'filesystem','%s'", fs.getUri()));
     LOG.info(writeStats.toString());
     LOG.info(readStats.toString());
     LOG.info(String.format(
-      "'rm1',%d,'ls1',%d",
-      rm1.value(),
-      ls1.value()));
+            "'rm1',%d,'ls1',%d",
+            rm1.value(),
+            ls1.value()));
     LOG.info(String.format(
-      "'rm2',%d,'ls2',%d",
-      rm2.value(),
-      ls2.value()));
+            "'rm2',%d,'ls2',%d",
+            rm2.value(),
+            ls2.value()));
   }
 
 }

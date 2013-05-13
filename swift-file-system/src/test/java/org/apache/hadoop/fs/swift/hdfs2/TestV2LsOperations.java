@@ -34,6 +34,7 @@ public class TestV2LsOperations extends SwiftFileSystemBaseTest {
 
   /**
    * Setup creates dirs under test/hadoop
+   *
    * @throws Exception
    */
   @Override
@@ -49,13 +50,14 @@ public class TestV2LsOperations extends SwiftFileSystemBaseTest {
    * Create subdirectories and files under test/ for those tests
    * that want them. Doing so adds overhead to setup and teardown,
    * so should only be done for those tests that need them.
+   *
    * @throws IOException on an IO problem
    */
   private void createTestSubdirs() throws IOException {
     testDirs = new Path[]{
-      path("/test/hadoop/a"),
-      path("/test/hadoop/b"),
-      path("/test/hadoop/c/1"),
+            path("/test/hadoop/a"),
+            path("/test/hadoop/b"),
+            path("/test/hadoop/c/1"),
     };
     assertPathDoesNotExist("test directory setup", testDirs[0]);
     for (Path path : testDirs) {
@@ -68,10 +70,9 @@ public class TestV2LsOperations extends SwiftFileSystemBaseTest {
    * To get this project to compile under Hadoop 1, this code needs to be
    * commented out
    *
-   *
-   * @param fs filesystem
-   * @param dir dir
-   * @param subdir subdir
+   * @param fs        filesystem
+   * @param dir       dir
+   * @param subdir    subdir
    * @param recursive recurse?
    * @throws IOException IO problems
    */
@@ -80,7 +81,7 @@ public class TestV2LsOperations extends SwiftFileSystemBaseTest {
                                           Path subdir,
                                           boolean recursive) throws IOException {
     RemoteIterator<LocatedFileStatus> iterator =
-      fs.listFiles(dir, recursive);
+            fs.listFiles(dir, recursive);
     boolean found = false;
     int entries = 0;
     StringBuilder builder = new StringBuilder();
@@ -93,11 +94,11 @@ public class TestV2LsOperations extends SwiftFileSystemBaseTest {
       }
     }
     assertTrue("Path " + subdir
-               + " not found in directory " + dir + " : "
-               + " entries=" + entries
-               + " content"
-               + builder.toString(),
-               found);
+            + " not found in directory " + dir + " : "
+            + " entries=" + entries
+            + " content"
+            + builder.toString(),
+            found);
   }
 
   @Test
